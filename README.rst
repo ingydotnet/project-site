@@ -6,6 +6,8 @@ New projects need a website... a place on the web to explain all the relevant pa
 
 Project Site is a simple way to generate a website for your new project. All you need to do is run a few commands, and then add pages to your site at your leisure. You can write pages in your favorite markup languages, like POD or reStructuredText or Socialtext or just HTML. See the "SETUP" file for more information.
 
+A new install of Project Site looks like this: http://test.acmeism.org/
+
 Project Site is used for the following websites:
 
 * http://www.acmeism.org/
