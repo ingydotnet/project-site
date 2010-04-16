@@ -8,7 +8,7 @@ Project Site is easy to set up. Just follow these easy steps::
     > git clone git://github.com/ingydotnet/project-site.git
     > mkdir your-project-name
     > cd your-project-name
-    > make -f ../project-site/Makefile new-project-site
+    > make -f ../project-site/Makefile project-site
     ... edit the config.yaml file appropriately
     ... add the appropriate image files to site/images/
     ... edit files in the content directory ... (See below)
@@ -38,6 +38,9 @@ Project Site currently support these markups:
 * ``.pod`` -- POD (Perl doc format)
 * ``.st`` -- Socialtext Wiki Markup
 * ``.html`` -- HTML (Just the contents of the <body> tag)
+
+Adding other formatters is trivial. Let me know if you want something or just
+send me a patch.
 
 ===================
 System Requirements
