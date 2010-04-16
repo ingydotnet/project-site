@@ -39,6 +39,8 @@ PROJECT_SITE_DEFAULTS = \
 	content/home.st \
 	site/images/logo.png \
 
+PROJECT_SITE_FILES = $(PROJECT_SITE_DIRS) $(PROJECT_SITE_SYMLINKS) $(PROJECT_SITE_DEFAULTS) $(SITE)/index.html htdocs
+
 SITE_CSS = $(SITE)/$(PROJECT_SITE_CSS)
 SITE_DIRS = $(ALL_CONTENT:%=$(SITE)/%/)
 SITE_HTML = $(ALL_CONTENT:%=$(SITE)/%/index.html)
@@ -75,8 +77,12 @@ template/%.html: content/%.pod
 $(SITE_DIRS) $(PROJECT_SITE_DIRS):
 	mkdir -p $@
 
-project-site: $(PROJECT_SITE_DIRS) $(PROJECT_SITE_SYMLINKS) $(PROJECT_SITE_DEFAULTS)
-	(cd $(SITE); ln -s home/index.html)
+project-site: $(PROJECT_SITE_FILES)
+
+$(SITE)/index.html:
+	ln -s home/index.html $@
+
+htdocs:
 	ln -s $(SITE) htdocs
 
 $(PROJECT_SITE_SYMLINKS_0):
@@ -93,3 +99,6 @@ $(PROJECT_SITE_DEFAULTS):
 
 clean:
 	rm -fr $(SITE_DIRS)
+
+purge: clean
+	rm -f $(PROJECT_SITE_FILES)
