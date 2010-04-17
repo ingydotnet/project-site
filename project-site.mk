@@ -1,12 +1,15 @@
 #
 # Make Variables
 #
+.PHONY: new website all clean purge
+
+# MAKEFILE := $(shell if [ -e Makefile ]; then readlink Makefile; fi)
+ALL_CONTENT := $(shell if [ -e content ]; then find content/ -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
+
 SITE = site
 TEMPLATE = template
 
-ALL_CONTENT := $(shell find content/ -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort)
-
-PROJECT_SITE_BASE = $(MAKEFILE_LIST:%/Makefile=%)
+PROJECT_SITE_BASE = $(MAKEFILE_LIST:%/project-site.mk=%)
 PROJECT_SITE_CSS = project-site.css
 PROJECT_SITE_DIRS = \
 	content \
@@ -16,7 +19,6 @@ PROJECT_SITE_DIRS = \
 	site/js \
 
 PROJECT_SITE_SYMLINKS_0 = \
-	Makefile \
 	bin \
 
 PROJECT_SITE_SYMLINKS_1 = \
@@ -39,7 +41,13 @@ PROJECT_SITE_DEFAULTS = \
 	content/home.st \
 	site/images/logo.png \
 
-PROJECT_SITE_FILES = $(PROJECT_SITE_DIRS) $(PROJECT_SITE_SYMLINKS) $(PROJECT_SITE_DEFAULTS) $(SITE)/index.html htdocs
+PROJECT_SITE_FILES = \
+	Makefile \
+	$(PROJECT_SITE_DIRS) \
+	$(PROJECT_SITE_SYMLINKS) \
+	$(PROJECT_SITE_DEFAULTS) \
+	$(SITE)/index.html \
+	htdocs \
 
 SITE_CSS = $(SITE)/$(PROJECT_SITE_CSS)
 SITE_DIRS = $(ALL_CONTENT:%=$(SITE)/%/)
@@ -51,10 +59,11 @@ SITE_FILES = $(SITE_HTML) $(SITE_CSS)
 #
 
 # debug:
+# 	echo $(MAKEFILE)
 # 	@echo '>>' $(SITE_DIRS)
 # 	@echo '>>>' $(SITE_FILES)
 
-all: $(SITE_DIRS) $(SITE_FILES)
+website: $(SITE_DIRS) $(SITE_FILES)
 
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
@@ -77,13 +86,20 @@ template/%.html: content/%.pod
 $(SITE_DIRS) $(PROJECT_SITE_DIRS):
 	mkdir -p $@
 
-project-site: $(PROJECT_SITE_FILES)
+new: $(PROJECT_SITE_FILES)
+
+# XXX Not working yet :\
+# upgrade:
+# 	make -f $(MAKEFILE) new
 
 $(SITE)/index.html:
 	ln -s home/index.html $@
 
+Makefile:
+	ln -s $(PROJECT_SITE_BASE)/project-site.mk $@
+
 htdocs:
-	ln -s $(SITE) htdocs
+	ln -s $(SITE) $@
 
 $(PROJECT_SITE_SYMLINKS_0):
 	ln -s $(PROJECT_SITE_BASE)/$@ $@

@@ -8,12 +8,12 @@ Project Site is easy to set up. Just follow these easy steps::
     > git clone git://github.com/ingydotnet/project-site.git
     > mkdir your-project-name
     > cd your-project-name
-    > make -f ../project-site/Makefile project-site
+    > make -f ../project-site/project-site.mk new
     ... edit the config.yaml file appropriately
     ... add the appropriate image files to site/images/
-    ... edit files in the content directory ... (See below)
-    > make
-    ... repeat edit/make as necessary ...
+    ... edit files in the content directory (See below)
+    > make website
+    ... repeat edit & 'make website' as necessary
 
 The directory ``your/server/website/path/your-project-name/site/`` is your
 website's root directory. You'll need to configure your web server to point at
