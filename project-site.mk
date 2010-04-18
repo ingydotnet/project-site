@@ -12,6 +12,7 @@ TEMPLATE = template
 PROJECT_SITE_BASE = $(MAKEFILE_LIST:%/project-site.mk=%)
 PROJECT_SITE_CSS = project-site.css
 PROJECT_SITE_DIRS = \
+	bin \
 	content \
 	template \
 	site \
@@ -19,9 +20,10 @@ PROJECT_SITE_DIRS = \
 	site/js \
 
 PROJECT_SITE_SYMLINKS_0 = \
-	bin \
 
 PROJECT_SITE_SYMLINKS_1 = \
+	bin/render \
+	bin/strip.pl \
 	$(TEMPLATE)/wrapper.html \
 	$(TEMPLATE)/header.html \
 	$(TEMPLATE)/$(PROJECT_SITE_CSS) \
@@ -40,6 +42,7 @@ PROJECT_SITE_DEFAULTS = \
 	template/sidebar.html \
 	content/home.st \
 	site/images/logo.png \
+	$(TEMPLATE)/custom.css \
 
 PROJECT_SITE_FILES = \
 	Makefile \
@@ -48,6 +51,7 @@ PROJECT_SITE_FILES = \
 	$(PROJECT_SITE_DEFAULTS) \
 	$(SITE)/index.html \
 	htdocs \
+	.gitignore \
 
 SITE_CSS = $(SITE)/$(PROJECT_SITE_CSS)
 SITE_DIRS = $(ALL_CONTENT:%=$(SITE)/%/)
@@ -68,11 +72,11 @@ website: $(SITE_DIRS) $(SITE_FILES)
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
 
-$(SITE)/%/index.html: template/%.html config.yaml Makefile $(SITE)/%/
+$(SITE)/%/index.html: template/%.html template/sidebar.html template/wrapper.html config.yaml Makefile $(SITE)/%/
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(@:$(SITE)/%/index.html=%.html) > $@
 
 template/%.html: content/%.html
-	cp -p $< > $@
+	cp -p $< $@
 
 template/%.html: content/%.st
 	bin/render $< > $@
@@ -94,6 +98,9 @@ new: $(PROJECT_SITE_FILES)
 
 $(SITE)/index.html:
 	ln -s home/index.html $@
+
+.gitignore:
+	cp -p $(PROJECT_SITE_BASE)/gitignore $@
 
 Makefile:
 	ln -s $(PROJECT_SITE_BASE)/project-site.mk $@

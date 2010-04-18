@@ -4,11 +4,11 @@
 <head>
   <title>[% title %]</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <link rel="shortcut icon" type="image/x-icon" href="[% base_url %]/images/favicon.ico">
-  <link rel="stylesheet" href="[% base_url %]/project-site.css" type="text/css">
-  <link rel="stylesheet" href="[% base_url %]/custom.css" type="text/css">
-  <script type="text/javascript" src="[% base_url %]/js/jquery.js"></script>
-  <script type="text/javascript" src="[% base_url %]/js/sidebar.js"></script>
+  <link rel="shortcut icon" type="image/x-icon" href="[% favicon_file || "/images/favicon.ico" %]">
+  <link rel="stylesheet" href="/project-site.css" type="text/css">
+  <link rel="stylesheet" href="/custom.css" type="text/css">
+  <script type="text/javascript" src="/js/jquery.js"></script>
+  <script type="text/javascript" src="/js/sidebar.js"></script>
 </head>
 
 <body>
@@ -17,7 +17,7 @@
 <div class="bottom">
 [% PROCESS sidebar.html %]
 <div class="content">
-<img class="photo" src="[% base_url %]/images/chris-dent.jpg" alt="">
+<img class="photo" src="/images/chris-dent.jpg" alt="">
 [% content %]
 </div>
 </div>

@@ -1,0 +1,10 @@
+site/js/jquery.js
+site/js/sidebar.js
+site/images/tile.gif
+Makefile
+template/wrapper.html
+template/project-site.css
+template/header.html
+bin/render
+bin/strip.pl
+index.html
