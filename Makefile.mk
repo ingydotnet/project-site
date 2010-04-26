@@ -9,7 +9,7 @@ ALL_CONTENT := $(shell if [ -e content ]; then find content/ -type f | grep -v '
 SITE = site
 TEMPLATE = template
 
-PROJECT_SITE_BASE = $(MAKEFILE_LIST:%/project-site.mk=%)
+PROJECT_SITE_BASE = $(MAKEFILE_LIST:%/Makefile.mk=%)
 PROJECT_SITE_CSS = project-site.css
 PROJECT_SITE_DIRS = \
 	bin \
@@ -62,12 +62,21 @@ SITE_FILES = $(SITE_HTML) $(SITE_CSS)
 # Make Targets
 #
 
+default:
+	@echo 'There is no default target. You probably want one of these:'
+	@echo ''
+	@echo '	   new 	  - Create a new project'
+	@echo '    update - Update existing project'
+	@echo ''
+
 # debug:
 # 	echo $(MAKEFILE)
 # 	@echo '>>' $(SITE_DIRS)
 # 	@echo '>>>' $(SITE_FILES)
 
-website: $(SITE_DIRS) $(SITE_FILES)
+new: $(PROJECT_SITE_FILES)
+
+update: $(SITE_DIRS) $(SITE_FILES)
 
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
@@ -90,8 +99,6 @@ template/%.html: content/%.pod
 $(SITE_DIRS) $(PROJECT_SITE_DIRS):
 	mkdir -p $@
 
-new: $(PROJECT_SITE_FILES)
-
 # XXX Not working yet :\
 # upgrade:
 # 	make -f $(MAKEFILE) new
@@ -103,7 +110,7 @@ $(SITE)/index.html:
 	cp -p $(PROJECT_SITE_BASE)/gitignore $@
 
 Makefile:
-	ln -s $(PROJECT_SITE_BASE)/project-site.mk $@
+	ln -s $(PROJECT_SITE_BASE)/Makefile.mk $@
 
 htdocs:
 	ln -s $(SITE) $@
