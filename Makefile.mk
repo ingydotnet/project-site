@@ -4,7 +4,9 @@
 .PHONY: new website all clean purge
 
 # MAKEFILE := $(shell if [ -e Makefile ]; then readlink Makefile; fi)
-ALL_CONTENT := $(shell if [ -e content ]; then find content/ -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
+ALL_CONTENT := $(shell if [ -e content ]; then find content -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
+
+ALL_LAYOUT := $(shell if [ -e layout ]; then find layout -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
 
 SITE = site
 TEMPLATE = template
@@ -14,6 +16,7 @@ PROJECT_SITE_CSS = project-site.css
 PROJECT_SITE_DIRS = \
 	bin \
 	content \
+	layout \
 	template \
 	site \
 	site/images \
@@ -65,8 +68,9 @@ SITE_FILES = $(SITE_HTML) $(SITE_CSS)
 default:
 	@echo 'There is no default target. You probably want one of these:'
 	@echo ''
-	@echo '	   new 	  - Create a new project'
-	@echo '    update - Update existing project'
+	@echo '	   new 	   - Create a new project'
+	@echo '    update  - Update existing project'
+	@echo '    upgrade - Get latest project-site files'
 	@echo ''
 
 # debug:
@@ -77,6 +81,13 @@ default:
 new: $(PROJECT_SITE_FILES)
 
 update: $(SITE_DIRS) $(SITE_FILES)
+
+upgrade:
+	@if [ "$(PROJECT_SITE_BASE)" == "Makefile" ]; then echo 'run instead: make -f ../project-site/Makefile.mk upgrade'; exit 1; fi
+	mkdir -p $(PROJECT_SITE_DIRS)
+	rm Makefile
+	ln -s $(PROJECT_SITE_BASE)/Makefile.mk Makefile
+	-cp -Rn `find $(PROJECT_SITE_BASE) -depth 1 | egrep -v '\.git|\.rst|~|\.swp|gitignore|config\.yaml|Makefile.mk'` .
 
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
@@ -90,13 +101,16 @@ template/%.html: content/%.html
 template/%.html: content/%.st
 	bin/render $< > $@
 
+template/%.html: layout/%.st
+	bin/render $< > $@
+
 template/%.html: content/%.pod
 	pod2html $< > $@.tmp 2> /dev/null
 	rm pod2htm[id].tmp
 	bin/strip.pl $@.tmp > $@
 	rm $@.tmp
 
-$(SITE_DIRS) $(PROJECT_SITE_DIRS):
+$(SITE_DIRS) $(PROJEC_SITE_DIRS):
 	mkdir -p $@
 
 # XXX Not working yet :\
