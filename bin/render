@@ -22,7 +22,7 @@ $html = WikiText::Socialtext::Parser->new(
            wikilink => sub {
                my $node = shift;
                my $target = $node->{attributes}{target};
-               return "$target/index.html";
+               return "$target";
            },
        },
    ),

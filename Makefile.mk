@@ -102,10 +102,10 @@ $(SITE)/%/index.html: template/%.html template/*.html config.yaml Makefile $(SIT
 template/%.html: content/%.html
 	cp -p $< $@
 
-template/%.html: content/%.st
+template/%.html: content/%.st bin/render
 	bin/render $< > $@
 
-template/%.html: layout/%.st
+template/%.html: layout/%.st bin/render
 	bin/render --html-already $< > $@
 
 template/%.html: content/%.pod
