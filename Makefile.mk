@@ -87,7 +87,7 @@ upgrade:
 	mkdir -p $(PROJECT_SITE_DIRS)
 	rm Makefile
 	ln -s $(PROJECT_SITE_BASE)/Makefile.mk Makefile
-	-cp -Rn `find $(PROJECT_SITE_BASE) -depth 1 | egrep -v '\.git|\.rst|~|\.swp|gitignore|config\.yaml|Makefile.mk'` .
+	-cp -Rn `find $(PROJECT_SITE_BASE) -mindepth 1 -maxdepth 1 | egrep -v '\.git|\.rst|~|\.swp|gitignore|config\.yaml|Makefile.mk'` .
 
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
