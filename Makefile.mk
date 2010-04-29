@@ -4,9 +4,9 @@
 .PHONY: new website all clean purge
 
 # MAKEFILE := $(shell if [ -e Makefile ]; then readlink Makefile; fi)
-ALL_CONTENT := $(shell if [ -e content ]; then find content -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
+ALL_CONTENT := $(shell if [ -e content ]; then find content -type f | egrep -v '(\.sw|~$$)' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
 
-ALL_LAYOUT := $(shell if [ -e layout ]; then find layout -type f | grep -v '\.sw' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
+ALL_LAYOUT := $(shell if [ -e layout ]; then find layout -type f | egrep -v '(\.sw|~$$)' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
 
 SITE = site
 TEMPLATE = template
@@ -58,7 +58,7 @@ PROJECT_SITE_FILES = \
 
 SITE_CSS = $(SITE)/$(PROJECT_SITE_CSS)
 SITE_DIRS = $(ALL_CONTENT:%=$(SITE)/%/)
-SITE_HTML = $(ALL_CONTENT:%=$(SITE)/%/index.html)
+SITE_HTML = $(ALL_CONTENT:%=$(SITE)/%/index.html) $(ALL_LAYOUT:%=$(TEMPLATE)/%.html)
 SITE_FILES = $(SITE_HTML) $(SITE_CSS)
 
 #
@@ -102,7 +102,7 @@ template/%.html: content/%.st
 	bin/render $< > $@
 
 template/%.html: layout/%.st
-	bin/render $< > $@
+	bin/render --html-already $< > $@
 
 template/%.html: content/%.pod
 	pod2html $< > $@.tmp 2> /dev/null

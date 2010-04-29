@@ -4,8 +4,13 @@ use strict;
 use warnings;
 use WikiText::Socialtext::Parser;
 use WikiText::HTML::Emitter;
+use Getopt::Long;
 
-my $html_already = 0;
+my $html_already;
+
+GetOptions(
+    "html-already" => \$html_already,
+);
 
 my $input = do { local $/; <> };
 $input =~ s/\r//g;
@@ -23,8 +28,13 @@ $html = WikiText::Socialtext::Parser->new(
    ),
 )->parse($input);
 
-print <<"...";
+if ($html_already) {
+    print $html;
+}
+else {
+    print <<"...";
 [% WRAPPER wrapper.html %]
 $html
 [% END %]
 ...
+}
