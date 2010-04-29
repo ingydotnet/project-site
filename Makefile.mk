@@ -22,8 +22,6 @@ PROJECT_SITE_DIRS = \
 	site/images \
 	site/js \
 
-PROJECT_SITE_SYMLINKS_0 = \
-
 PROJECT_SITE_SYMLINKS_1 = \
 	bin/render \
 	bin/strip.pl \
@@ -36,7 +34,6 @@ PROJECT_SITE_SYMLINKS_2 = \
 	$(SITE)/js/sidebar.js \
 
 PROJECT_SITE_SYMLINKS = \
-	$(PROJECT_SITE_SYMLINKS_0) \
 	$(PROJECT_SITE_SYMLINKS_1) \
 	$(PROJECT_SITE_SYMLINKS_2) \
 
@@ -68,7 +65,7 @@ SITE_FILES = $(SITE_HTML) $(SITE_CSS)
 default:
 	@echo 'There is no default target. You probably want one of these:'
 	@echo ''
-	@echo '	   new 	   - Create a new project'
+	@echo '    new     - Create a new project'
 	@echo '    update  - Update existing project'
 	@echo '    upgrade - Get latest project-site files'
 	@echo ''
@@ -87,12 +84,19 @@ upgrade:
 	mkdir -p $(PROJECT_SITE_DIRS)
 	rm Makefile
 	ln -s $(PROJECT_SITE_BASE)/Makefile.mk Makefile
-	-cp -Rn `find $(PROJECT_SITE_BASE) -mindepth 1 -maxdepth 1 | egrep -v '\.git|\.rst|~|\.swp|gitignore|config\.yaml|Makefile.mk'` .
+	@for f in `find $(PROJECT_SITE_BASE) -type f | \
+	    egrep -v '\.git|\.rst|~|\.swp|gitignore|config\.yaml|Makefile.mk|/js/' | \
+	    perl -pe 's!^$(PROJECT_SITE_BASE)/?!!'`; do \
+	    if [ ! -e $$f ]; then \
+	        echo "cp -R $(PROJECT_SITE_BASE)/$$f $$f"; \
+	        cp -R $(PROJECT_SITE_BASE)/$$f $$f; \
+	    fi \
+	done \
 
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
 
-$(SITE)/%/index.html: template/%.html template/sidebar.html template/wrapper.html config.yaml Makefile $(SITE)/%/
+$(SITE)/%/index.html: template/%.html template/*.html config.yaml Makefile $(SITE)/%/
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(@:$(SITE)/%/index.html=%.html) > $@
 
 template/%.html: content/%.html
@@ -140,6 +144,11 @@ $(PROJECT_SITE_SYMLINKS_2):
 
 $(PROJECT_SITE_DEFAULTS):
 	cp -p $(PROJECT_SITE_BASE)/$@ $@
+
+symlinks: cleanlinks $(PROJECT_SITE_SYMLINKS) Makefile
+
+cleanlinks:
+	rm -fr $(PROJECT_SITE_SYMLINKS) Makefile
 
 clean:
 	rm -fr $(SITE_DIRS)
