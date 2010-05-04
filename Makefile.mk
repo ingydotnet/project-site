@@ -41,7 +41,7 @@ PROJECT_SITE_DEFAULTS = \
 	config.yaml \
 	template/sidebar.html \
 	content/home.st \
-	site/images/logo.png \
+	layout/navigation.st \
 	$(TEMPLATE)/custom.css \
 
 PROJECT_SITE_FILES = \
@@ -50,20 +50,23 @@ PROJECT_SITE_FILES = \
 	$(PROJECT_SITE_SYMLINKS) \
 	$(PROJECT_SITE_DEFAULTS) \
 	$(SITE)/index.html \
+	$(TEMPLATE)/navigation.html \
 	htdocs \
 	.gitignore \
 
-SITE_CSS = $(SITE)/$(PROJECT_SITE_CSS)
 SITE_DIRS = $(ALL_CONTENT:%=$(SITE)/%/)
 SITE_HTML = $(ALL_CONTENT:%=$(SITE)/%/index.html) $(ALL_LAYOUT:%=$(TEMPLATE)/%.html)
+SITE_CSS = $(SITE)/$(PROJECT_SITE_CSS) 
 SITE_FILES = $(SITE_HTML) $(SITE_CSS)
 
 #
 # Make Targets
 #
 
-default:
-	@echo 'There is no default target. You probably want one of these:'
+update: _check_update $(SITE_DIRS) $(SITE_FILES) $(SITE)/custom.css
+
+help:
+	@echo 'You probably want one of these targets:'
 	@echo ''
 	@echo '    new     - Create a new project'
 	@echo '    update  - Update existing project'
@@ -75,9 +78,13 @@ default:
 # 	@echo '>>' $(SITE_DIRS)
 # 	@echo '>>>' $(SITE_FILES)
 
-new: $(PROJECT_SITE_FILES)
+new: _check_new $(PROJECT_SITE_FILES)
 
-update: $(SITE_DIRS) $(SITE_FILES)
+_check_new:
+	@if [ -e Makefile ]; then echo "Looks like an existing project site"; exit 1; fi
+
+_check_update:
+	@if [ ! -e Makefile ]; then echo "Looks like this is not a project site"; exit 1; fi
 
 upgrade:
 	@if [ "$(PROJECT_SITE_BASE)" == "Makefile" ]; then echo 'run instead: make -f ../project-site/Makefile.mk upgrade'; exit 1; fi
@@ -95,6 +102,9 @@ upgrade:
 
 $(SITE_CSS): $(TEMPLATE)/$(PROJECT_SITE_CSS) Makefile config.yaml
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(PROJECT_SITE_CSS) > $@
+
+$(SITE)/%.css: $(TEMPLATE)/%.css Makefile config.yaml
+	tt-render --path=$(TEMPLATE) --data=config.yaml $(<:$(TEMPLATE)/%=%) > $@
 
 $(SITE)/%/index.html: template/%.html template/*.html config.yaml Makefile $(SITE)/%/
 	tt-render --path=$(TEMPLATE) --data=config.yaml $(@:$(SITE)/%/index.html=%.html) > $@
@@ -114,7 +124,7 @@ template/%.html: content/%.pod
 	bin/strip.pl $@.tmp > $@
 	rm $@.tmp
 
-$(SITE_DIRS) $(PROJEC_SITE_DIRS):
+$(SITE_DIRS) $(PROJECT_SITE_DIRS):
 	mkdir -p $@
 
 # XXX Not working yet :\

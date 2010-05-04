@@ -1,3 +1,7 @@
 <div class="header">
-  <a href="[% base_url %]/"><img class="logo" src="[% base_url %]/images/[% logo_file %]" alt=""></a>
+[% IF site_name %]
+  <h1 id="site-name"><a href="[% base_url %]/">[% site_name %]</a></h1>
+[% ELSE %]
+  <a href="[% base_url %]/"><img class="logo" src="[% base_url %]/images/logo.png" alt=""></a>
+[% END %]
 </div>

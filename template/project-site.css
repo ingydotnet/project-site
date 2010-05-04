@@ -95,3 +95,30 @@ html, body {
     margin-right: auto;
 }
 
+/* Site-Name Logo */
+@-webkit-keyframes shiny {
+    from { }
+    to {
+        text-shadow: 0 0 20px #000;
+    }
+}
+a:hover {
+    -webkit-animation-name: shiny;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction: alternate;
+    -webkit-animation-timing-function: ease-in-out;
+}
+
+#site-name {
+    font-size: 650%;
+    font-family: Courier;
+    text-shadow: 1px 1px 5px #999;
+}
+#site-name a {
+    color: #000;
+    text-decoration: none;
+}
+#site-name a span {
+    padding-right: 15px;
+}
