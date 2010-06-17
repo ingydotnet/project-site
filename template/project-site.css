@@ -7,6 +7,7 @@ body {
     font-family: Helvetica;
 
     background:url("[% base_url %]/images/tile.gif") repeat scroll 0 0 #84856A;
+    min-width: 960px;
 }
 
 html, body {
@@ -112,7 +113,7 @@ a:hover {
 
 #site-name {
     font-size: 650%;
-    font-family: Courier;
+    font-family: Courier, "Courier New";
     text-shadow: 1px 1px 5px #999;
 }
 #site-name a {
