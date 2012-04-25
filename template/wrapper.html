@@ -17,7 +17,9 @@
 <div class="bottom">
 [% PROCESS sidebar.html %]
 <div class="content">
-<img class="photo" src="/images/chris-dent.jpg" alt="">
+[% IF icon_image %]
+<img class="photo" src="[% icon_image %]" alt="">
+[% END %]
 [% content %]
 </div>
 </div>

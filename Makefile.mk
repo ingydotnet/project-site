@@ -4,8 +4,9 @@
 .PHONY: new website all clean purge
 
 # MAKEFILE := $(shell if [ -e Makefile ]; then readlink Makefile; fi)
-ALL_CONTENT := $(shell if [ -e content ]; then find content -type f | egrep -v '(\.sw|~$$)' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
-
+ALL_CONTENT_FILES := $(shell if [ -e content ]; then find content -type f | egrep -v '(\.sw|~$$)' | perl -pe 's!^\w+/(.*)\.(?:asc|st|pod|html)$$!$$1!' | sort; fi)
+ALL_CONTENT_LINKS := $(shell if [ -e content ]; then find content -type l | egrep -v '(\.sw|~$$)' | perl -pe 's!^\w+/(.*)\.(?:asc|st|pod|html)$$!$$1!' | sort; fi)
+ALL_CONTENT = $(ALL_CONTENT_FILES) $(ALL_CONTENT_LINKS)
 ALL_LAYOUT := $(shell if [ -e layout ]; then find layout -type f | egrep -v '(\.sw|~$$)' | perl -pe 's!^\w+/(.*)\.(?:st|pod|html)$$!$$1!' | sort; fi)
 
 SITE = site
@@ -117,6 +118,11 @@ template/%.html: content/%.st bin/render
 
 template/%.html: layout/%.st bin/render
 	bin/render --html-already $< > $@
+
+template/%.html: content/%.asc
+	asciidoc -b html4 -o - $< > $@.tmp 2> /dev/null
+	bin/strip.pl $@.tmp > $@
+	rm $@.tmp
 
 template/%.html: content/%.pod
 	pod2html $< > $@.tmp 2> /dev/null
