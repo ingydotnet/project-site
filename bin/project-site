@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+[[ ${PROJECT_SITE_ROOT-} ]] ||
+  { echo "You need to 'source /path/to/project-site/.rc'"; exit 1; }
+
+source "project-site.bash"
+
+GETOPT_SPEC="\
+  $(basename "$0") <options...> [<project-site-dir>...]
+
+See 'man project-site' for more help.
+
+Common commands:
+
+  project-site --new my-site/
+
+Options:
+--
+ 
+new         Create a new project-site web site
+build       Build the project-site
+start       Start a local web server for the site
+publish     Publish the project-site
+version     Print the project-site version
+help        Show the command summary
+ 
+s,symlink   Symlink --new files to project-site repo
+v,verbose   Show more output
+ 
+x,debug     Print lots of debugging info
+"
+
+main() {
+  get-options "$@"
+
+  "command-$cmd" "${arguments[@]}"
+}
+
+command-new() {
+  get-dir "$@"
+
+  if dir-exists "$dir"; then
+    dir-is-empty "$dir" ||
+      error "New project-site dir '$dir' must be empty"
+  else
+    mkdir -p "$dir"
+  fi
+
+  if $option_symlink; then
+    symlink-share-to "$dir"
+  else
+    copy-share-to "$dir"
+  fi
+
+  printf "New project-site created in '%s'\n" "$(abs-path "$dir")"
+}
+
+copy-share-to() (
+  cd "$1"
+
+  src=$PROJECT_SITE_ROOT/share
+
+  cp -r "$src"/* .
+)
+
+symlink-share-to() (
+  cd "$1"
+
+  files=(
+    $(
+      cd "$PROJECT_SITE_ROOT/share"
+      find . -type f | cut -c3-
+    )
+  )
+
+  for file in "${files[@]}"; do
+    if [[ $file == */* ]]; then
+      mkdir -p "${file%/*}"
+    fi
+    ln -s "$PROJECT_SITE_ROOT/share/$file" "$file"
+  done
+
+)
+
+[[ $0 != "${BASH_SOURCE[0]}" ]] || main "$@"
+
+# vim: lisp ft=sh:

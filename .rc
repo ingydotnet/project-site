@@ -1,0 +1,13 @@
+# shellcheck shell=bash
+
+[[ -n ${ZSH_VERSION-} ]] &&
+  PROJECT_SITE_ROOT="$0" ||
+  PROJECT_SITE_ROOT="${BASH_SOURCE[0]}"
+
+PROJECT_SITE_ROOT=$(cd "$(dirname "$PROJECT_SITE_ROOT")" && pwd)
+
+export PROJECT_SITE_ROOT
+export PATH="$PROJECT_SITE_ROOT/bin:$PATH"
+export MANPATH="$PROJECT_SITE_ROOT/man:$MANPATH"
+
+# vim: set ft=sh:
