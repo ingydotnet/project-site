@@ -33,12 +33,11 @@ sh.rm('-rf', folderName)
 sh.mkdir('-p', folderName)
 sh.mkdir('-p', `${folderName}/assets/brand/`)
 
-sh.cp('-Rf', `_gh_pages/docs/${versionShort}/examples/*`, folderName)
-sh.cp('-Rf', `_gh_pages/docs/${versionShort}/dist/`, `${folderName}/assets/`)
+sh.cp('-Rf', `_gh_pages/dist/`, `${folderName}/assets/`)
 // also copy the two brand images we use in the examples
 sh.cp('-f', [
-  `_gh_pages/docs/${versionShort}/assets/brand/bootstrap-outline.svg`,
-  `_gh_pages/docs/${versionShort}/assets/brand/bootstrap-solid.svg`
+  `_gh_pages/assets/brand/bootstrap-outline.svg`,
+  `_gh_pages/assets/brand/bootstrap-solid.svg`
 ], `${folderName}/assets/brand/`)
 sh.rm(`${folderName}/index.html`)
 
@@ -46,7 +45,6 @@ sh.rm(`${folderName}/index.html`)
 sh.find(`${folderName}/**/*.html`).forEach(file => {
   const fileContents = sh.cat(file)
     .toString()
-    .replace(new RegExp(`"/docs/${versionShort}/`, 'g'), '"../')
     .replace(/"..\/dist\//g, '"../assets/dist/')
     .replace(/(<link href="\.\.\/.*) integrity=".*>/g, '$1>')
     .replace(/(<script src="\.\.\/.*) integrity=".*>/g, '$1></script>')

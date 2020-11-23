@@ -1,3 +1,9 @@
+# Project Site
+/_config.yml
+/dist/
+/js/dist/
+/site/_includes/icons/logo.svg
+
 # Ignore docs files
 /_gh_pages/
 /site/.jekyll-cache

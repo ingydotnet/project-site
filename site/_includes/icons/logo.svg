@@ -1,0 +1,55 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  focusable="true"
+  viewBox="0 0 110 110"
+  {% if include.width %}
+    width="{{include.width}}"
+  {% endif %}
+  {% if include.height %}
+    height="{{include.height}}"
+  {% endif %}
+  {% if include.class %}
+    class="{{include.class}}"
+  {% endif %}
+>
+
+  <defs>
+    <style>
+      .text {
+        font-size: 90px;
+        fill: none;
+        font-family: UbuntuMono-Regular, Ubuntu Mono, Courier;
+      }
+    </style>
+  </defs>
+
+  <rect
+    x="5" y="5"
+    width="100" height="100"
+    rx="12"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="4"
+  />
+
+  {% assign letters = site.ps-theme.logo.letters %}
+  {% if letters.size == 1 %}
+    <text
+      class="text"
+      transform="translate(22.5 40) scale(1.1 1)"
+    >
+      <tspan fill="currentColor" x="7" y="42" >{{letters}}</tspan>
+    </text>
+  {% endif %}
+
+  {% if letters.size == 2 %}
+    <text
+      class="text"
+      transform="translate(25 45) scale(0.75 0.9)"
+    >
+      <tspan fill="currentColor" x="-5" y="42">{{letters}}</tspan>
+    </text>
+  {% endif %}
+
+</svg>

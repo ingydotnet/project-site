@@ -1,0 +1,34 @@
+<nav class="collapse bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  {%- assign url_page_name = page.url | split: '/' | last -%}
+  {%- for side_group in site.data[page.sidebar] -%}
+    {%- assign first_page = side_group.pages | first -%}
+    {%- assign first_page_name = first_page.title | slugify -%}
+    {%- assign group_name = side_group.slug | default: (side_group.title | slugify) -%}
+    {%- assign active = nil -%}
+
+    {%- if page.level2 == group_name -%}
+      {%- assign active = 'active' -%}
+    {%- endif -%}
+
+    <div class="bd-toc-item{% unless active == nil %} {{active}}{% endunless %}">
+      <a class="bd-toc-link" href="{{site.baseurl}}/{{page.level1}}/{{group_name}}/{{first_page_name}}">
+        {{side_group.title}}
+      </a>
+
+      <ul class="nav bd-sidenav">
+        {%- for page_entry in side_group.pages -%}
+          {%- assign page_name = page_entry.slug | default: (page_entry.title | slugify) -%}
+          {%- assign active = nil -%}
+
+          {%- if page.level2 == group_name and url_page_name == page_name -%}
+            {%- assign active = 'active bd-sidenav-active' -%}
+          {%- endif -%}
+
+          <li{% unless active == nil %} class="{{active}}"{% endunless %}>
+            <a href="{{site.baseurl}}/{{page.level1}}/{{group_name}}/{{page_name}}/">&nbsp;&nbsp;{{page_entry.title}}</a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endfor -%}
+</nav>

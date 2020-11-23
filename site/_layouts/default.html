@@ -6,17 +6,39 @@
   <body>
     {% include skippy.html %}
 
-    {% include docs-navbar.html %}
+    {% include navbar.html %}
 
-    {% if page.layout == "simple" %}
-      {{ content }}
-    {% else %}
-      <main id="content" role="main">
-        {{ content }}
-      </main>
-    {% endif %}
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+        {% if page.sidebar %}
+          <div class="col-md-3 col-xl-2 bd-sidebar">
+            {% include sidebar.html %}
+          </div>
+        {% endif %}
 
-    {% include footer.html %}
+        {% if page.toc %}
+          <nav class="d-none d-xl-block col-xl-2 bd-toc" aria-label="Secondary navigation">
+            {{content | toc_only}}
+          </nav>
+        {% endif %}
+
+        <main class="col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
+          <div class="d-md-flex flex-md-row-reverse align-items-center justify-content-between">
+            <a class="btn btn-sm btn-bd-light my-2 my-md-0"
+               href="{{site.code.repo}}/blob/{{site.code.branch}}/src/{{page.path}}"
+               title="View and edit this file on GitHub"
+               target="_blank"
+               rel="noopener"
+            >View on GitHub</a>
+            <h1 class="bd-title" id="content">{{page.title | smartify}}</h1>
+          </div>
+          <p class="bd-lead">{{page.description | smartify}}</p>
+          <hr/>
+          {{content}}
+        </main>
+      </div>
+    </div>
+
     {% include scripts.html %}
   </body>
 </html>
