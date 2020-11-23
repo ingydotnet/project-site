@@ -1,0 +1,219 @@
+#!/usr/bin/env bash
+
+set -e -u -o pipefail
+
+main() (
+  i=/input
+  o=/output
+  r=$PWD
+  t=$r/template
+  s=$r/site
+
+  setup-site
+
+  build-site
+
+  [[ ${1-} == --local ]] && return
+
+  publish-site
+)
+
+setup-site() (
+  check-directory $i Input
+
+  setup-config
+  setup-theme
+  setup-data
+  setup-pages
+  setup-files
+)
+
+setup-config() (
+  # Create the _config.yml file:
+  set -x
+  ps-config \
+    ./template/_config.yml \
+    /input/ps-config.yaml \
+    > _config.yml
+)
+
+setup-theme() (
+  # Set theme color:
+  set -x
+  render-template \
+    site/assets/scss/_variables.scss \
+    /input/ps-config.yaml
+)
+
+setup-data() (
+  # Copy over Markdown and YAML source files:
+  find $i -name 'ps-*.yaml' -print |
+    while read -r file; do
+      name=${file#$i/}
+      name=${name%.yaml}
+      name=${name//\//__}
+      if [[ $file == *ps-config* ]]; then
+        navbar=$(y2j < "$file" | jq .navbar)
+        sidebar=$(y2j < "$file" | jq .sidebar)
+        if [[ $navbar && $navbar != null ]]; then
+          name=${name/ps-config/navbar}
+          echo "$navbar" | j2y > "$s/_data/$name.yaml"
+        elif [[ $sidebar && $sidebar != null ]]; then
+          name=${name/ps-config/sidebar}
+          echo "$sidebar" | j2y > "$s/_data/$name.yaml"
+        fi
+      else
+        name=${name/ps-/}
+        cp -f "$file" "$s/_data/$name.yaml"
+      fi
+    done
+
+  find $s/_data
+)
+
+setup-pages() (
+  # Copy over Markdown source files:
+  find $i -name ReadMe.md -prune -o -name '*.md' -print |
+    while read -r file; do
+      setup-page "$file"
+    done
+)
+
+setup-page() (
+  file=$1
+  filepath=${file#$i/}
+  out_file=$s/$filepath
+  mkdir -p "$(dirname "$out_file")"
+
+  set -- $(IFS=/; echo $file)
+  configs=()
+
+  navbar=
+  sidebar=
+  data=''
+
+  [[ -e $s/_data/navbar.yaml ]] && navbar=navbar
+  [[ -e $s/_data/sidebar.yaml ]] && sidebar=sidebar
+
+  path=''
+  while [[ $# > 0 ]]; do
+    dir=$1
+    shift
+
+    path+=/$dir
+
+    if [[ $path != $i ]]; then
+      data+=${dir}__
+      [[ -e $s/_data/${data}navbar.yaml ]] &&
+        navbar=${data}navbar
+      [[ -e $s/_data/${data}sidebar.yaml ]] &&
+        sidebar=${data}sidebar
+    fi
+
+    config=$path/ps-config.yaml
+    [[ -f $config ]] && configs+=("$config")
+  done
+
+  get-levels "${filepath%.md}"
+
+  export navbar sidebar
+  export level1 level2 level3
+
+  (
+    set -x
+    ps-page "$file" "${configs[@]}" > "$out_file"
+  )
+)
+
+get-levels() {
+  level1= level2= level3=
+  path=$1
+  path=${path%index}
+  path=${path%/}
+  path=${path#/}
+  [[ $path ]] || return 0
+  levels=($(IFS=/; echo $path))
+  level1=${levels[0]-}
+  level2=${levels[1]-}
+  level3=${levels[2]-}
+}
+
+setup-files() (
+  if [[ -d $i/ps-layout ]]; then
+    ( set -x; cp -fr $i/ps-layout/* "$s/_layouts/" )
+  fi
+
+  if [[ -d $i/ps-include ]]; then
+    ( set -x; cp -fr $i/ps-include/* "$s/_includes/" )
+  fi
+
+  if [[ -d $i/ps-data ]]; then
+    ( set -x; cp -fr $i/ps-data/* "$s/_data/" )
+  fi
+)
+
+render-template() (
+  template=$1 data=$2
+  ps-render \
+    "template/$template" \
+    "$data" \
+    > "$template"
+)
+
+build-site() (
+  set -x
+
+  npm run build
+
+  bundle exec jekyll build --config=_config.yml
+)
+
+publish-site() (
+  check-directory $o Output
+
+  set -x
+
+  (
+    cd $o
+    find . -path './.git*' -prune -o -name CNAME -prune -o -path './*' -print |
+      xargs rm -fr
+  )
+
+  (
+    cd _gh_pages
+
+    find . -path './.git*' -prune -o -path './*' -print |
+      cpio -dump $o
+  )
+
+  date > $o/.project-site-build
+)
+
+check-directory() (
+  [[ -d $1 ]] ||
+    die "Error: $2 directory '$1' does not exist"
+)
+
+j2y() (
+  node -e '
+    const fs = require("fs");
+    const yaml = require("yaml");
+    const j = fs.readFileSync("/dev/stdin").toString()
+    const y = yaml.stringify(JSON.parse(j));
+    fs.writeFileSync("/dev/stdout", y);
+  '
+)
+
+y2j() (
+  node -e '
+    const fs = require("fs");
+    const yaml = require("yaml");
+    const y = fs.readFileSync("/dev/stdin").toString()
+    const j = JSON.stringify(yaml.parse(y));
+    fs.writeFileSync("/dev/stdout", j);
+  '
+)
+
+die() (printf "%s\n" "$@" >&2; exit 1)
+
+main "$@"

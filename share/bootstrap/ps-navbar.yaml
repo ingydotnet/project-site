@@ -1,0 +1,11 @@
+left:
+- type: logo
+- name: Home
+  link: /
+- name: Documentation
+  link: /doc
+
+right:
+- type: github
+- type: twitter
+- type: slack

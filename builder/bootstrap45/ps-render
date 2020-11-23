@@ -1,0 +1,16 @@
+#!/usr/bin/env coffee
+
+process.env.NODE_PATH = '/usr/local/node_modules'
+require("module").Module._initPaths()
+
+require 'ingy-prelude'
+yaml = require 'yaml'
+liquid = new (require 'liquid').Engine
+
+main = ([template_file, data_file])->
+  data = yaml.parse file_read data_file
+  template = file_read template_file
+  liquid.parseAndRender(template, data)
+    .then (text)-> out text
+
+main process.argv[2..]

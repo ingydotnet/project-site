@@ -14,5 +14,15 @@ alias grv='git remote -v'
 alias gst='git status'
 alias gsti='git status --ignored'
 
-alias jb='bundle exec jekyll build'
-alias js='bundle exec jekyll serve --skip-initial-build --host 0.0.0.0'
+ftf () {
+  find ${1:-.} -type f | grep -v '\/\.git\/'
+}
+jb()(
+  set -ex
+  bundle exec jekyll build --trace
+  cp -r dist _gh_pages/docs/4.5/
+)
+js()(
+  set -ex
+  bundle exec jekyll serve --skip-initial-build --host 0.0.0.0
+)

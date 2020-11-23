@@ -1,13 +1,39 @@
+SHELL := bash
+
+ROOT := $(shell pwd)
+
+export PATH := $(ROOT)/bin:$(PATH)
+
+input ?= share/bootstrap
+output ?= gh-pages
+builder ?= bootstrap45
+port ?= $(shell grep '^  port: ' $(input)/ps-config.yaml | awk '{print $$2}')
+
+BUILDER_BASE := base-$(builder)
+
+
 default:
 
-test: shellcheck
+build local shell publish: builder-build $(BUILDER_BASE)
+	project-site --$@ \
+	    --input=$(input) \
+	    --output=$(output) \
+	    --builder=$(builder) \
+	    --port=$(port) \
+	    "$(cmd)"
 
-shellcheck:
-	shellcheck bin/project-site
-	@echo 'shellchecks passed'
+builder-build:
+	make -C builder/$(builder) build
 
-update: bin/getopt.bash
+$(BUILDER_BASE):
+	git branch --track $@ origin/$@ 2>/dev/null || true
+	git worktree add -f $@ $@
 
+$(output):
+	git branch --track $@ origin/$@ 2>/dev/null || true
+	git worktree add -f $@
+	touch $@/.project-site-build
 
-bin/getopt.bash: ../getopt-bash/getopt.bash
-	cp $< $@
+clean:
+	rm -fr base-*
+	rm -fr gh-pages

@@ -1,0 +1,48 @@
+#!/usr/bin/env coffee
+
+process.env.NODE_PATH = '/usr/local/node_modules'
+require("module").Module._initPaths()
+
+require 'ingy-prelude'
+yaml = require 'yaml'
+{merge} = require 'merge-anything'
+
+main = (base, site)->
+  config = yaml.parse file_read base
+
+  override = rework yaml.parse file_read site
+  config = merge config, override
+
+  if (port = process.env.PROJECT_SITE_PORT)?
+    config = merge config, port: port
+
+  out yaml.stringify config
+
+rework = (o)->
+  die "Top level ps-config.yaml must contain 'project-site' key" \
+    unless o["project-site"]?
+
+  if (build = o.build)?
+    delete o.build
+    o.port = build.port if build.port
+
+  if (theme = o.theme)?
+    delete o.theme
+    o['ps-theme'] = theme
+
+  if (social = o.social)?
+    delete o.social
+    o.twitter = social.twitter if social.twitter
+    o.slack = social.slack if social.slack
+    o.github = social.github if social.github
+
+  delete o['project-site']
+  delete o.navbar
+  delete o.sidebar
+  delete o.page
+  delete o.copyright
+
+  return o
+
+
+main process.argv[2..]...

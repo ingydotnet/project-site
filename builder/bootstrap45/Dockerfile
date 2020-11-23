@@ -2,18 +2,7 @@ FROM node:15.2.1
 
 SHELL ["/bin/bash", "-c"]
 
-WORKDIR /work
-
-# Get Bootstrap 4.5:
-RUN git clone https://github.com/twbs/bootstrap base \
- && ( \
-        cd base && \
-        git checkout -b project-site v4.5.0 && \
-        npm install --verbose . && \
-        npm audit fix \
-    )
-
-# Install Ruby:
+# Install Ruby 2.5:
 RUN wget https://cache.ruby-lang.org/pub/ruby/snapshot/snapshot-ruby_2_5.tar.gz \
  && tar xzf snapshot-ruby_2_5.tar.gz \
  && ( \
@@ -23,25 +12,78 @@ RUN wget https://cache.ruby-lang.org/pub/ruby/snapshot/snapshot-ruby_2_5.tar.gz 
         make install \
     ) \
  && rm -fr snapshot-ruby_2_5* \
- && gem install bundler -v 1.17.3 \
  && true
 
-# Install Ruby gems:
-RUN ( cd base && bundle install )
+# WORKDIR for dependencies:
+WORKDIR /deps
 
-# Dev setup stuff:
-RUN apt-get update
-RUN apt-get install -y less
-RUN apt-get install -y locales
-RUN apt-get install -y silversearcher-ag
-RUN apt-get install -y tig
-RUN apt-get install -y tmux
-RUN apt-get install -y vim
-RUN apt-get install -y w3m
+# Copy over the npm and gem manifests:
+COPY package.json Gemfile* ./
 
+# Install all NodeJS npm dependencies:
+RUN npm install --verbose . \
+ && npm audit fix \
+ && mv ./node_modules / \
+ && true
+
+# Install all Ruby gem dependencies:
+RUN gem install bundler -v 2.1.4 \
+ && bundle install \
+ && true
+
+# Development setup stuff:
+RUN apt-get update \
+ && apt-get install -y \
+        cpio \
+        jq \
+ && true
+
+# Install node packages needed to build:
+RUN npm install --verbose -g \
+        coffeescript \
+ && npm install --verbose --prefix=/usr/local \
+        ingy-prelude \
+        ini \
+        liquid \
+        merge-anything \
+        yaml \
+ && true
+
+# XXX Uncomment when stable
+# # Copy builder scripts:
+# COPY ps-* /bin/
+
+# /builder will be our main workdir:
+WORKDIR /builder
+
+# /output will be our build area
+RUN mkdir /output \
+ && chown node.node /output \
+ && true
+
+#------------------------------------------------------------------------------
+# Steps above should never change.
+#------------------------------------------------------------------------------
+
+RUN apt-get install -y \
+        less \
+        locales \
+        silversearcher-ag \
+        tig \
+        tmux \
+        vim \
+        w3m \
+ && true
+
+# Set locale for tmux:
 RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
  && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
  && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
- && locale-gen en_US.UTF-8
+ && locale-gen en_US.UTF-8 \
+ && true
 
-COPY bashrc /root/.bashrc
+# Add some Bash aliases:
+COPY bashrc /home/node/.bashrc
+
+# Copy builder scripts:
+COPY ps-* /bin/

@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-[[ ${PROJECT_SITE_ROOT-} ]] ||
-  { echo "You need to 'source /path/to/project-site/.rc'"; exit 1; }
+VERSION=0.0.1
 
-source "project-site.bash"
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd) || exit
+
+export PATH=$(find "$root/ext" -name bin -o -name lib | tr '\n' :)$PATH
+
+source bash+ :std
+
+use Getopt
 
 GETOPT_SPEC="\
   $(basename "$0") <options...> [<project-site-dir>...]
@@ -16,15 +21,19 @@ Common commands:
 
 Options:
 --
- 
 new         Create a new project-site web site
 build       Build the project-site
-start       Start a local web server for the site
-publish     Publish the project-site
+local       Start a local web server for the site
+publish     Publish your web site
+shell       Start a shell in the builder container
+builders    List builders available
 version     Print the project-site version
 help        Show the command summary
  
-s,symlink   Symlink --new files to project-site repo
+i,input=    Input/Source/Content directory
+o,output=   Output/Build/Publish directory
+b,builder=  Builder to use (see --builders)
+p,port=     Port to run local server on
 v,verbose   Show more output
  
 x,debug     Print lots of debugging info
@@ -33,10 +42,10 @@ x,debug     Print lots of debugging info
 main() {
   get-options "$@"
 
-  "command-$cmd" "${arguments[@]}"
+  "command:$cmd" "${arguments[@]}"
 }
 
-command-new() {
+command:new() {
   get-dir "$@"
 
   if dir-exists "$dir"; then
@@ -46,13 +55,157 @@ command-new() {
     mkdir -p "$dir"
   fi
 
-  if $option_symlink; then
-    symlink-share-to "$dir"
-  else
-    copy-share-to "$dir"
-  fi
+  copy-share-to "$dir"
 
   printf "New project-site created in '%s'\n" "$(abs-path "$dir")"
+}
+
+command:build() (
+  check-options +input +output +builder
+
+  mkdir -p "$option_output"
+
+  docker-run ps-build
+)
+
+command:local() (
+  check-options +input +builder
+
+  unset option_output
+
+  docker-run ps-local
+)
+
+command:publish() (
+  die 'XXX Not yet implemented\n'
+)
+
+command:shell() (
+  check-options
+
+  hist=/tmp/project-site-history
+
+  touch $hist
+
+  options=(
+    --volume "$hist:/home/node/.bash_history"
+  )
+
+  docker-run "${1:-tmux}"
+)
+
+command:builders() (
+  cat <<...
+Use one of these builders:
+
+  * bootstrap45
+
+...
+)
+
+command:version() (
+  echo "ProjectSite v$VERSION"
+)
+
+docker-run() (
+  cmd=$1
+
+  options+=(
+    --publish "$option_port:$option_port"
+    --user "$(id -u $USER):$(id -g $USER)"
+  )
+  if [[ $option_input ]]; then
+    options+=(--volume $option_input:/input)
+  fi
+  if [[ $option_output ]]; then
+    [[ -d $option_output ]] ||
+      mkdir -p "$option_output"
+    touch "$option_output/.project-site-build"
+    options+=(--volume $option_output:/output)
+  fi
+  if [[ $option_builder ]]; then
+    base_name=base-$option_builder
+    base_dir=$root/$base_name
+    if [[ ! -d $base_dir ]]; then
+      (
+        cd "$root"
+        git branch --track "$base_name" "origin/$base_name" \
+          2>/dev/null || true
+        git worktree add -f "$base_name" "$base_name"
+      )
+    fi
+    (
+      cd "$base_dir"
+      git reset --hard
+      git clean -dxf
+    )
+    options+=(--volume "$base_dir:/builder")
+  fi
+  if [[ $option_port ]]; then
+    options+=(--env "PROJECT_SITE_PORT=$option_port")
+  fi
+
+  set -x
+  docker run -it --rm \
+    "${options[@]}" \
+    "$docker_image" \
+    bash -c "$cmd"
+)
+
+check-options() {
+  for arg; do
+    if [[ $arg == +* ]]; then
+      option=option_${arg#+}
+      if [[ ! ${!option} ]]; then
+        if [[ $option == input ]]; then
+          option_input=$PWD
+          continue
+        fi
+        error "No --builder=... option specified"
+      fi
+    fi
+  done
+}
+
+get-options() {
+  GETOPT_ARGS='@arguments' getopt "$@"
+
+  $option_debug && set -x
+
+  option_unknown=true
+  for cmd in new build local shell publish builders version unknown; do
+    option=option_$cmd
+    ! ${!option} || break
+  done
+  [[ $cmd != unknown ]] ||
+    error "No command option specified"
+
+  [[ $option_input ]] &&
+    option_input=$(abs-path "$option_input")
+  [[ $option_output ]] &&
+    option_output=$(abs-path "$option_output")
+  [[ $option_port ]] ||
+    option_port=12345
+
+  if [[ $option_builder && ! $option_builder =~ (bootstrap45) ]]; then
+    error "Invalid value --builder='$option_builder'." \
+      "Try --builders to list builders."
+  fi
+
+  docker_image=project-site-builder-$option_builder
+
+  options=()
+}
+
+get-dir() {
+  if [[ $# -eq 0 ]]; then
+    dir=.
+    return
+  elif [[ $# -gt 1 ]]; then
+    error "Command only take 1 argument; project-site directory"
+  fi
+
+  dir=$1
 }
 
 copy-share-to() (
@@ -81,6 +234,25 @@ symlink-share-to() (
   done
 
 )
+
+abs-path () {
+  case "$1" in
+    /*) printf "%s\n" "$1";;
+    *) printf "%s\n" "$PWD/$1";;
+  esac
+}
+
+dir-exists() {
+  [[ -e $1 ]]
+}
+
+dir-is-empty() {
+  [[ ! $(ls -A "$1") ]]
+}
+
+error() {
+  die "Error: $*\n"
+}
 
 [[ $0 != "${BASH_SOURCE[0]}" ]] || main "$@"
 

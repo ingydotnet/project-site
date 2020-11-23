@@ -1,0 +1,30 @@
+project-site: 0.0.1
+
+title: Mini Bootstrap
+description: A sample portion of the Bootstrap doc site
+url: https://ingydotnet.github.io/project-site
+
+build:
+  builder: bootstrap45
+  output: ./gh-pages
+  port: 12345
+
+page:
+  layout: default
+  toc: false
+
+theme:
+  color: 101010
+  logo:
+    include: logo.svg
+    letters: Bs
+
+social:
+  github: ingydotnet/project-site
+  twitter: project-site
+  slack: project-site
+
+copyright:
+  who: Ingy döt Net
+  when: 2020
+  license: MIT

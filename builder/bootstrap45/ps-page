@@ -1,0 +1,41 @@
+#!/usr/bin/env coffee
+
+process.env.NODE_PATH = '/usr/local/node_modules'
+require("module").Module._initPaths()
+
+require 'ingy-prelude'
+yaml = require 'yaml'
+{merge} = require 'merge-anything'
+
+main = (page_file, configs...)->
+  front = {}
+  front.navbar = process.env.navbar
+  front.sidebar = process.env.sidebar
+  front.level1 = process.env.level1
+  front.level2 = process.env.level2
+  front.level3 = process.env.level3
+
+  for config in configs
+    data = yaml.parse file_read config
+    delete data.navbar
+    delete data.sidebar
+    if data['project-site']?
+      if (d = data.page)?
+        data = d
+      else
+        data = {}
+    front = merge front, data
+
+  text = file_read page_file
+  if m = text.match /^---\n([\s\S]*?\n)---\n/
+    front_matter = m[1]
+    text = text[(front_matter.length + 8)..]
+
+    # TODO Treat front_matter as template
+
+    data = yaml.parse front_matter
+    front = merge front, data
+
+  out "---\n#{yaml.stringify front}---\n#{text}"
+
+main process.argv[2..]...
