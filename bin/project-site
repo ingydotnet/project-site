@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.0.1
+VERSION=0.0.2
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd) || exit
 
@@ -98,13 +98,13 @@ command:builders() (
   cat <<...
 Use one of these builders:
 
-  * bootstrap45
+  * bootstrap45 - See: https://getbootstrap.com/docs/4.5/
 
 ...
 )
 
 command:version() (
-  echo "ProjectSite v$VERSION"
+  echo "project-site v$VERSION"
 )
 
 docker-run() (
@@ -192,7 +192,7 @@ get-options() {
       "Try --builders to list builders."
   fi
 
-  docker_image=project-site-builder-$option_builder
+  docker_image=projectsite/ps-builder-bootstrap45:$VERSION
 
   options=()
 }
