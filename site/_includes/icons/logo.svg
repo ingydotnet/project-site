@@ -33,7 +33,7 @@
     stroke-width="4"
   />
 
-  {% assign letters = site.ps-theme.logo.letters %}
+  {% assign letters = site.ps-theme.logo.letters | default: X %}
   {% if letters.size == 1 %}
     <text
       class="text"
