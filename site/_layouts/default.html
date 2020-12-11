@@ -22,8 +22,15 @@
           </nav>
         {% endif %}
 
+
         <main class="col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
           <div class="d-md-flex flex-md-row-reverse align-items-center justify-content-between">
+            {% if page.sidebar %}
+              <button class="btn bd-search-docs-toggle d-md-none p-0 ml-3" type="button" data-toggle="collapse" data-target="#bd-docs-nav" aria-controls="bd-docs-nav" aria-expanded="false" aria-label="Toggle docs navigation">
+                  {%- include icons/menu.svg width="30" height="30" -%}
+              </button>
+            {% endif %}
+
             <a class="btn btn-sm btn-bd-light my-2 my-md-0"
                href="{{site.code.repo}}/blob/{{site.code.branch}}/src/{{page.path}}"
                title="View and edit this file on GitHub"
