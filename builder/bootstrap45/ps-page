@@ -9,11 +9,11 @@ yaml = require 'yaml'
 
 main = (page_file, configs...)->
   front = {}
-  front.navbar = process.env.navbar
-  front.sidebar = process.env.sidebar
-  front.level1 = process.env.level1
-  front.level2 = process.env.level2
-  front.level3 = process.env.level3
+  front.navbar = process.env.navbar if process.env.navbar
+  front.sidebar = process.env.sidebar if process.env.sidebar
+  front.level1 = process.env.level1 if process.env.level1
+  front.level2 = process.env.level2 if process.env.level2
+  front.level3 = process.env.level3 if process.env.level3
 
   for config in configs
     data = yaml.parse file_read config

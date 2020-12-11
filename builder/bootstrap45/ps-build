@@ -54,21 +54,22 @@ setup-data() (
       name=${name//\//__}
       if [[ $file == *ps-config* ]]; then
         navbar=$(y2j < "$file" | jq .navbar)
-        sidebar=$(y2j < "$file" | jq .sidebar)
         if [[ $navbar && $navbar != null ]]; then
-          name=${name/ps-config/navbar}
-          echo "$navbar" | j2y > "$s/_data/$name.yaml"
-        elif [[ $sidebar && $sidebar != null ]]; then
-          name=${name/ps-config/sidebar}
-          echo "$sidebar" | j2y > "$s/_data/$name.yaml"
+          nav_name=${name/ps-config/navbar}
+          echo "$navbar" | j2y > "$s/_data/$nav_name.yaml"
+        fi
+        if ! grep -q 'sidebar: false' "$file"; then
+          sidebar=$(y2j < "$file" | jq .sidebar)
+          if [[ $sidebar && $sidebar != null ]]; then
+            side_name=${name/ps-config/sidebar}
+            echo "$sidebar" | j2y > "$s/_data/$side_name.yaml"
+          fi
         fi
       else
         name=${name/ps-/}
         cp -f "$file" "$s/_data/$name.yaml"
       fi
     done
-
-  find $s/_data
 )
 
 setup-pages() (
@@ -85,7 +86,7 @@ setup-page() (
   out_file=$s/$filepath
   mkdir -p "$(dirname "$out_file")"
 
-  set -- $(IFS=/; echo $file)
+  set -- $(IFS=/; dirname $filepath)
   configs=()
 
   navbar=
@@ -93,23 +94,23 @@ setup-page() (
   data=''
 
   [[ -e $s/_data/navbar.yaml ]] && navbar=navbar
-  [[ -e $s/_data/sidebar.yaml ]] && sidebar=sidebar
+  if [[ -e $s/_data/sidebar.yaml ]] &&
+     ! grep -q 'sidebar: false' "$s/_data/sidebar.yaml"
+  then
+    sidebar=sidebar
+  fi
 
   path=''
   while [[ $# > 0 ]]; do
-    dir=$1
-    shift
+    dir=$1; shift
+
+    data+=${dir}__
+    [[ -e $s/_data/${data}navbar.yaml ]] &&
+      navbar=${data}navbar
+    [[ -e $s/_data/${data}sidebar.yaml ]] &&
+      sidebar=${data}sidebar
 
     path+=/$dir
-
-    if [[ $path != $i ]]; then
-      data+=${dir}__
-      [[ -e $s/_data/${data}navbar.yaml ]] &&
-        navbar=${data}navbar
-      [[ -e $s/_data/${data}sidebar.yaml ]] &&
-        sidebar=${data}sidebar
-    fi
-
     config=$path/ps-config.yaml
     [[ -f $config ]] && configs+=("$config")
   done
