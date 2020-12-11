@@ -4,9 +4,9 @@ ROOT := $(shell pwd)
 
 export PATH := $(ROOT)/bin:$(PATH)
 
-input ?= share/bootstrap
-output ?= gh-pages
-builder ?= bootstrap45
+input := share/bootstrap
+output := .gh-pages
+builder := bootstrap45
 port ?= $(shell grep '^  port: ' $(input)/ps-config.yaml | awk '{print $$2}')
 
 BUILDER_BASE := base-$(builder)
@@ -35,5 +35,4 @@ $(output):
 	touch $@/.project-site-build
 
 clean:
-	rm -fr base-*
-	rm -fr gh-pages
+	rm -fr base-* $(output)

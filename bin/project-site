@@ -77,7 +77,22 @@ command:local() (
 )
 
 command:publish() (
-  die 'XXX Not yet implemented\n'
+  check-options +output
+
+  [[ -d $option_output ]] ||
+    error "The --output directory '$option_output' does not exist"
+  [[ -e $option_output/.git ]] ||
+    error "The --output directory '$option_output' is not a git working directory"
+
+  command:build "$@"
+
+  (
+    set -x
+    cd "$option_output"
+    git add -A .
+    git commit -m "$(date)"
+    git push
+  )
 )
 
 command:shell() (
