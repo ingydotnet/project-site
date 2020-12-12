@@ -10,11 +10,11 @@
 
     <div class="container-fluid">
       <div class="row flex-xl-nowrap">
-        {% if page.sidebar %}
-          <div class="col-md-3 col-xl-2 bd-sidebar">
+        <div class="col-md-3 col-xl-2 bd-sidebar">
+          {% if page.sidebar %}
             {% include sidebar.html %}
-          </div>
-        {% endif %}
+          {% endif %}
+        </div>
 
         {% if page.toc %}
           <nav class="d-none d-xl-block col-xl-2 bd-toc" aria-label="Secondary navigation">
