@@ -49,6 +49,11 @@ RUN npm install --verbose -g \
         yaml \
  && true
 
+RUN git clone https://github.com/swinton/liquidize /liquidize \
+ && mv /liquidize/bin/liquidize /bin/ \
+ && rm -fr /liquidize \
+ && true
+
 # XXX Uncomment when stable
 # # Copy builder scripts:
 # COPY ps-* /bin/

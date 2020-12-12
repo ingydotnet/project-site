@@ -26,6 +26,7 @@ setup-site() (
   setup-data
   setup-pages
   setup-files
+  setup-favicon
 )
 
 setup-config() (
@@ -86,7 +87,7 @@ setup-page() (
   out_file=$s/$filepath
   mkdir -p "$(dirname "$out_file")"
 
-  set -- $(IFS=/; dirname $filepath)
+  set -- $(IFS=/; echo ${file%/*})
   configs=()
 
   navbar=
@@ -103,14 +104,17 @@ setup-page() (
   path=''
   while [[ $# > 0 ]]; do
     dir=$1; shift
-
-    data+=${dir}__
-    [[ -e $s/_data/${data}navbar.yaml ]] &&
-      navbar=${data}navbar
-    [[ -e $s/_data/${data}sidebar.yaml ]] &&
-      sidebar=${data}sidebar
-
     path+=/$dir
+
+    [[ $path == $i ]] || data+=${dir}__
+
+    if [[ -e $s/_data/${data}navbar.yaml ]]; then
+      navbar=${data}navbar
+    fi
+    if [[ -e $s/_data/${data}sidebar.yaml ]]; then
+      sidebar=${data}sidebar
+    fi
+
     config=$path/ps-config.yaml
     [[ -f $config ]] && configs+=("$config")
   done
@@ -150,6 +154,17 @@ setup-files() (
 
   if [[ -d $i/ps-data ]]; then
     ( set -x; cp -fr $i/ps-data/* "$s/_data/" )
+  fi
+)
+
+setup-favicon() (
+  if [[ $(y2j < "$r/_config.yml" |
+          jq 'select(.["ps-theme"].logo.letters)'
+     ) ]]
+  then
+    (echo site:; perl -pe 's/^/  /' "$r/_config.yml") > /tmp/config.yaml
+    liquidize /tmp/config.yaml "$s/_includes/icons/logo.svg" \
+      > "$s/favicon.svg"
   fi
 )
 
