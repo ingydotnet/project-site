@@ -21,22 +21,23 @@ Common commands:
 
 Options:
 --
-new         Create a new project-site web site
-build       Build the project-site
-local       Start a local web server for the site
-publish     Publish your web site
-shell       Start a shell in the builder container
-builders    List builders available
-version     Print the project-site version
-help        Show the command summary
+new           Create a new project-site web site
+build         Build the project-site
+local         Start a local web server for the site
+publish       Publish your web site
+make-branch=  Create a publishing branch (eg gh-pages)
+shell         Start a shell in the builder container
+builders      List builders available
+version       Print the project-site version
+help          Show the command summary
  
-i,input=    Input/Source/Content directory
-o,output=   Output/Build/Publish directory
-b,builder=  Builder to use (see --builders)
-p,port=     Port to run local server on
-v,verbose   Show more output
+i,input=      Input/Source/Content directory
+o,output=     Output/Build/Publish directory
+b,builder=    Builder to use (see --builders)
+p,port=       Port to run local server on
+v,verbose     Show more output
  
-x,debug     Print lots of debugging info
+x,debug       Print lots of debugging info
 "
 
 main() {
@@ -45,20 +46,27 @@ main() {
   "command:$cmd" "${arguments[@]}"
 }
 
-command:new() {
-  get-dir "$@"
+command:new() (
+  dir=$(abs-path "${1:-.}")
 
-  if dir-exists "$dir"; then
-    dir-is-empty "$dir" ||
+  if [[ -e $dir ]]; then
+    [[ -d $dir ]] ||
+      error "'$dir' is not a directory"
+    [[ ! $(\ls -A "$dir" | grep -v '^\.git$') ]] ||
       error "New project-site dir '$dir' must be empty"
   else
     mkdir -p "$dir"
   fi
 
-  copy-share-to "$dir"
+  (
+    set -x
+    cp "$PROJECT_SITE_ROOT/share/ReadMe.md" "$dir"
+    cp "$PROJECT_SITE_ROOT/share/Makefile" "$dir"
+    cp -r "$PROJECT_SITE_ROOT/share/src" "$dir"
+  )
 
-  printf "New project-site created in '%s'\n" "$(abs-path "$dir")"
-}
+  echo "New project-site created in '$dir/'"
+)
 
 command:build() (
   check-options +input +output +builder
@@ -86,6 +94,14 @@ command:publish() (
 
   command:build "$@"
 
+  if [[ ${PROJECT_SITE_CNAME-} ]]; then
+    if [[ $PROJECT_SITE_CNAME == none ]]; then
+      rm -f "$option_output/CNAME"
+    else
+      echo "$PROJECT_SITE_CNAME" > "$option_output/CNAME"
+    fi
+  fi
+
   (
     set -x
     cd "$option_output"
@@ -93,6 +109,53 @@ command:publish() (
     git commit -m "$(date)"
     git push
   )
+)
+
+command:make-branch() (
+  branch=$option_make_branch
+
+  git rev-parse &>/dev/null ||
+    error "Not in a git repository directory"
+
+  git rev-parse HEAD &>/dev/null ||
+    error "There are no commits in this git repository"
+
+  git rev-parse --verify --quiet "$branch" >/dev/null &&
+    error "Branch '$branch' already exists"
+
+  (git diff --quiet && git diff --cached --quiet) ||
+    error "Can't make-branch with uncommitted changes"
+
+  remote=$(git remote show)
+  [[ $remote ]] ||
+    error "This git repository has no remote"
+
+  [[ $(git config --get "remote.$remote.url") ]] ||
+    error "The git remote '$remote' has no upstream url"
+
+  curr_branch=$(git rev-parse --abbrev-ref HEAD)
+  temp_branch=temp-branch-$(date +%s)
+  git branch "$temp_branch" HEAD
+
+  temp_dir=$(mktemp -d)
+  dir=$temp_dir/$branch
+
+  git worktree add --quiet "$dir" "$temp_branch"
+  (
+    cd "$dir"
+    git checkout --quiet --orphan "$branch"
+
+    git rm -fr --quiet .
+    touch .project-site-build
+    git add -A .
+    git commit --quiet -m 'Initial commit'
+  )
+  git checkout --quiet "$curr_branch"
+  rm -fr "$temp"
+  git worktree prune
+  git branch --quiet -D "$temp_branch"
+
+  echo "Created branch '$branch' for publishing your project-site"
 )
 
 command:shell() (
@@ -159,6 +222,9 @@ docker-run() (
   if [[ $option_port ]]; then
     options+=(--env "PROJECT_SITE_PORT=$option_port")
   fi
+  if [[ $PROJECT_SITE_BASEURL ]]; then
+    options+=(--env "PROJECT_SITE_BASEURL=$PROJECT_SITE_BASEURL")
+  fi
 
   set -x
   docker run -it --rm \
@@ -188,10 +254,16 @@ get-options() {
   $option_debug && set -x
 
   option_unknown=true
-  for cmd in new build local shell publish builders version unknown; do
-    option=option_$cmd
-    ! ${!option} || break
-  done
+  if [[ $option_make_branch ]]; then
+    [[ $option_make_branch =~ ^[[:alnum:]]+(-[[:alnum:]]+)$ ]] ||
+      error "Invalid branch name '$option_make_branch'"
+    cmd=make-branch
+  else
+    for cmd in new build local shell publish builders version unknown; do
+      option=option_$cmd
+      ! ${!option} || break
+    done
+  fi
   [[ $cmd != unknown ]] ||
     error "No command option specified"
 
@@ -212,58 +284,17 @@ get-options() {
   options=()
 }
 
-get-dir() {
-  if [[ $# -eq 0 ]]; then
-    dir=.
+abs-path () (
+  if [[ -d $1 ]]; then
+    cd "$1"
+    pwd
     return
-  elif [[ $# -gt 1 ]]; then
-    error "Command only take 1 argument; project-site directory"
   fi
-
-  dir=$1
-}
-
-copy-share-to() (
-  cd "$1"
-
-  src=$PROJECT_SITE_ROOT/share
-
-  cp -r "$src"/* .
-)
-
-symlink-share-to() (
-  cd "$1"
-
-  files=(
-    $(
-      cd "$PROJECT_SITE_ROOT/share"
-      find . -type f | cut -c3-
-    )
-  )
-
-  for file in "${files[@]}"; do
-    if [[ $file == */* ]]; then
-      mkdir -p "${file%/*}"
-    fi
-    ln -s "$PROJECT_SITE_ROOT/share/$file" "$file"
-  done
-
-)
-
-abs-path () {
   case "$1" in
-    /*) printf "%s\n" "$1";;
-    *) printf "%s\n" "$PWD/$1";;
+    /*) echo "$1";;
+    *) echo "$PWD/$1";;
   esac
-}
-
-dir-exists() {
-  [[ -e $1 ]]
-}
-
-dir-is-empty() {
-  [[ ! $(ls -A "$1") ]]
-}
+)
 
 error() {
   die "Error: $*\n"

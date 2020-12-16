@@ -1,34 +1,30 @@
-SHELL := bash
+#------------------------------------------------------------------------------
+# This Makefile is an easy way to run all the `project-site` commands for your
+# web site. You probably don't need to change it at all.
+#
+# There are two included sections, one for variables and one for rules. This is
+# so you can override or extend variables and rules in here.
+#
+# Many of the predefined variables are set with `?=` so you can override them
+# here or in a shell environment. Variables set with `:=` are not intended to
+# be overridden.
+#
+# The predefined rules are:
+#   info build local publish shell serve clean
+#
+# They are all `.PHONY` and all use the `::` form so that you can add to them.
+#------------------------------------------------------------------------------
 
-SITE_DIR := src
-SITE_BUILDER := bootstrap45
-BUILD_DIR := .build
-PROJECT_SITE := .project-site
-PORT ?= $(shell grep '^  port: ' $(SITE_DIR)/ps-config.yaml | awk '{print $$2}')
 
-export PATH := $(PROJECT_SITE)/bin:$(PATH)
+# This is a check to make sure that `project-site` is installed locally.
+ifeq ($(PROJECT_SITE_ROOT),)
+  $(error See https://project-site.org/site/installation)
+endif
 
-default:
 
-build local publish shell: $(PROJECT_SITE) $(BUILD_DIR)
-	project-site --$@ \
-	    --input=$(SITE_DIR) \
-	    --output=$(BUILD_DIR) \
-	    --builder=$(SITE_BUILDER) \
-	    --port=$(PORT)
+# Include the basic project-site variables:
+include $(PROJECT_SITE_ROOT)/share/.vars.mk
 
-serve: build
-	( \
-	    cd $(BUILD_DIR); \
-	    python -m SimpleHTTPServer $(PORT); \
-	)
 
-clean:
-	rm -fr $(PROJECT_SITE) $(BUILD_DIR)
-
-$(PROJECT_SITE):
-	git clone git@github.com:ingydotnet/project-site $@
-
-$(BUILD_DIR):
-# 	git branch --track $@ origin/$@ 2>/dev/null || true
-# 	git worktree add -f $@
+# Include the rules for running common `project-site` commands:
+include $(PROJECT_SITE_ROOT)/share/.rules.mk

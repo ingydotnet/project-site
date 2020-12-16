@@ -16,6 +16,12 @@ main = (base, site)->
   if (port = process.env.PROJECT_SITE_PORT)?
     config = merge config, port: port
 
+  if (baseurl = process.env.PROJECT_SITE_BASEURL)?
+    baseurl = baseurl
+      .replace /^\/?/, '/'
+      .replace /\/$/, ''
+    config = merge config, baseurl: baseurl
+
   out yaml.stringify config
 
 rework = (o)->
