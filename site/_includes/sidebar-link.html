@@ -1,0 +1,14 @@
+{% assign url = site.baseurl | default: '' -%}
+{% if include.p1 != '' -%}
+  {% assign url = url | append: '/' | append: include.p1 -%}
+{% endif -%}
+{% if include.p2 != '' -%}
+  {% assign url = url | append: '/' | append: include.p2 -%}
+{% endif -%}
+{% if include.p3 != '' -%}
+  {% assign url = url | append: '/' | append: include.p3 -%}
+{% endif -%}
+{% if url == '' -%}
+  {% assign url = '/' -%}
+{% endif -%}
+<a class="bd-toc-link" href="{{url}}">{{include.text}}</a>

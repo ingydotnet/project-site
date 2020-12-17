@@ -11,9 +11,7 @@
     {%- endif -%}
 
     <div class="bd-toc-item{% unless active == nil %} {{active}}{% endunless %}">
-      <a class="bd-toc-link" href="{{site.baseurl}}/{{page.level1}}/{{group_name}}/{{first_page_name}}">
-        {{side_group.title}}
-      </a>
+      {% include sidebar-link.html text=side_group.title p1=page.level1 p2=group_name p3=first_page_name %}
 
       <ul class="nav bd-sidenav">
         {%- for page_entry in side_group.pages -%}
@@ -24,8 +22,9 @@
             {%- assign active = 'active bd-sidenav-active' -%}
           {%- endif -%}
 
+          {% assign link_text = '&nbsp;&nbsp;' | append: page_entry.title %}
           <li{% unless active == nil %} class="{{active}}"{% endunless %}>
-            <a href="{{site.baseurl}}/{{page.level1}}/{{group_name}}/{{page_name}}/">&nbsp;&nbsp;{{page_entry.title}}</a>
+            {% include sidebar-link.html text=link_text p1=page.level1 p2=group_name p3=page_name %}
           </li>
         {%- endfor -%}
       </ul>
