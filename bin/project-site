@@ -109,6 +109,24 @@ command:publish() (
     git commit -m "$(date)"
     git push
   )
+
+  echo
+  echo "Your site has been published to the internet."
+  if [[ -e $option_output/CNAME ]]; then
+    domain=$(cat "$option_output/CNAME")
+    echo "Visit https://$domain/"
+    return
+  fi
+
+  github_url=$(git config --get remote.origin.url) || true
+  [[ $github_url ]] || return 0
+  github_path=${github_url%.git}
+  github_path=${github_path#https://github.com/}
+  github_path=${github_path#git@github.com:}
+  github_user=${github_path%/*}
+  github_repo=${github_path#*/}
+
+  echo "Visit https://$github_user.github.io/$github_repo/"
 )
 
 command:make-branch() (
