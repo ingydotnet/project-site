@@ -46,16 +46,20 @@ clean::
 
 $(OUTPUT_DIR):
 ifneq ($(PUBLISH_BRANCH),)
-	@( \
-	  git rev-parse --verify --quiet $(PUBLISH_BRANCH) >/dev/null || \
-	  git branch --track $(PUBLISH_BRANCH) origin/$(PUBLISH_BRANCH) \
-	) || { \
-	    echo "No local branch '$(PUBLISH_BRANCH)' found"; \
-	    echo "Try: project-site --make-branch=$(PUBLISH_BRANCH)"; \
-	    exit 1; \
-	}
-	git worktree add -f $@ $(PUBLISH_BRANCH)
-	touch $@/.project-site-build
+	$(call add-branch-dir,$(PUBLISH_BRANCH))
 else
 	mkdir -p $@
 endif
+
+define add-branch-dir
+	@( \
+	  git rev-parse --verify --quiet $(1) >/dev/null || \
+	  git branch --track $(1) origin/$(1) \
+	) || { \
+	    echo "No local branch '$(1)' found"; \
+	    echo "Try: project-site --make-branch=$(1)"; \
+	    exit 1; \
+	}
+	git worktree add -f $@ $1
+	touch $@/.project-site-build
+endef

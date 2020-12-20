@@ -58,6 +58,9 @@ command:new() (
     mkdir -p "$dir"
   fi
 
+  [[ $PROJECT_SITE_ROOT ]] ||
+    error "The 'project-site' command was not installed properly"
+
   (
     set -x
     cp "$PROJECT_SITE_ROOT/share/ReadMe.md" "$dir"
