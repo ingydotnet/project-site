@@ -10,9 +10,9 @@
 <meta name="docsearch:language" content="en">
 <meta name="docsearch:version" content="4.5">
 
-<title>Project Site · A static site generator for projects</title>
+<title>ProjectSite Installation · Project Site</title>
 
-<link rel="canonical" href="/">
+<link rel="canonical" href="/doc/installation/">
 
 <!-- Bootstrap core CSS -->
 <link href="/dist/css/bootstrap.css" rel="stylesheet">
@@ -33,16 +33,16 @@
 <meta name="theme-color" content="#563d7c">
 
 <!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@https://twitter.com/ProjectSiteNews">
 <meta name="twitter:creator" content="@https://twitter.com/ProjectSiteNews">
-<meta name="twitter:title" content="Project Site">
+<meta name="twitter:title" content="ProjectSite Installation">
 <meta name="twitter:description" content="A static site generator for projects">
-<meta name="twitter:image" content="/assets/brand/bootstrap-social.png">
+<meta name="twitter:image" content="/assets/brand/bootstrap-social-logo.png">
 
 <!-- Facebook -->
-<meta property="og:url" content="/">
-<meta property="og:title" content="Project Site">
+<meta property="og:url" content="/doc/installation/">
+<meta property="og:title" content="ProjectSite Installation">
 <meta property="og:description" content="A static site generator for projects">
 <meta property="og:type" content="website">
 <meta property="og:image" content="/assets/brand/bootstrap-social.png">
@@ -127,7 +127,7 @@
       
         
         <li class="nav-item">
-            <a class="nav-link" href="/doc/">Doc</a>
+            <a class="nav-link active" href="/doc/">Doc</a>
         </li>
       
 
@@ -168,12 +168,12 @@
         <div class="col-md-3 col-xl-2 bd-sidebar">
           
             <nav class="collapse bd-links" id="bd-docs-nav" aria-label="Main navigation"><div class="bd-toc-item">
-      <a class="bd-toc-link" href="/home/">Home</a>
+      <a class="bd-toc-link" href="/doc/installation/">Installation</a>
 
 
       <ul class="nav bd-sidenav"></ul>
     </div><div class="bd-toc-item">
-      <a class="bd-toc-link" href="/why-projectsite/">Why ProjectSite?</a>
+      <a class="bd-toc-link" href="/doc/forking-a-projectsite/">Forking a ProjectSite</a>
 
 
       <ul class="nav bd-sidenav"></ul>
@@ -185,13 +185,6 @@
         
           <nav class="d-none d-xl-block col-xl-2 bd-toc" aria-label="Secondary navigation">
             <ul class="section-nav">
-<li class="toc-entry toc-h2"><a href="#description">Description</a></li>
-<li class="toc-entry toc-h2"><a href="#how-it-works">How it Works</a></li>
-<li class="toc-entry toc-h2"><a href="#prerequisites">Prerequisites</a></li>
-<li class="toc-entry toc-h2"><a href="#installation">Installation</a></li>
-<li class="toc-entry toc-h2"><a href="#commands">Commands</a></li>
-<li class="toc-entry toc-h2"><a href="#see-also">See Also</a></li>
-<li class="toc-entry toc-h2"><a href="#license-and-copyright">License and Copyright</a></li>
 </ul>
           </nav>
         
@@ -204,7 +197,7 @@
             
 
             <a class="btn btn-sm btn-bd-light my-2 my-md-0"
-               href="https://github.com/ingydotnet/project-site/blob/www/src/index.md"
+               href="https://github.com/ingydotnet/project-site/blob/www/src/doc/installation.md"
                title="View and edit this file on GitHub"
                target="_blank"
                rel="noopener"
@@ -214,111 +207,21 @@
                 <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
               </svg>
             </a>
-            <h1 class="bd-title" id="content"></h1>
+            <h1 class="bd-title" id="content">ProjectSite Installation</h1>
           </div>
           <p class="bd-lead"></p>
           <hr/>
-          <h1 id="projectsite">ProjectSite</h1>
+          <p>Installing ProjectSite is really simple.</p>
 
-<p>Create a website for your Open Source project.</p>
-
-<h2 id="description">Description</h2>
-
-<p>The <a href="http://project-site.org">ProjectSite</a> web site builder lets you define rich websites using only <a href="https://daringfireball.net/projects/markdown/">Markdown</a> and <a href="https://yaml.com">YAML</a>.
-The software builds and publishes state off the art, mobile ready websites with a single command.
-The generated websites are static which means they are very secure and blindingly fast.</p>
-
-<p>ProjectSite is geared towards make informational websites for software projects.</p>
-
-<h2 id="how-it-works">How it Works</h2>
-
-<p>The <code class="language-plaintext highlighter-rouge">project-site</code> command takes your input files and injects them into a builder environment using Docker.
-The builder environment is a third party static site builder with a preconfigured theme and plugins.</p>
-
-<p>At this point there is only one builder available:</p>
-
-<ul>
-  <li>
-    <p><code class="language-plaintext highlighter-rouge">bootstrap45</code></p>
-
-    <p>This builder is a modified version of the tooling used to produce the <a href="https://getbootstrap.com/docs/4.5/">Bootsrap 4.5 documenation website</a>.
-Its main features are that it has a site section contents sidebar on the left and page contents navigation on the right.
-It has a lot of other little formatting niceties and given that its Bootstrap’s site you can expect it will work well everywhere.</p>
-
-    <p>The Bootstrap site is built with the popular <a href="https://jekyllrb.com/">Jekyll</a> static site framework.
-ProjectSite injects its YAML and Markdown content into Jekyll and triggers its build system.
-ProjectSite allows you to put YAML in more appropriate places and then collects it and puts it in the places Jekyll wants.</p>
-  </li>
-  <li>
-    <p>Even though ProjectSite only has one builder/backend at this early stage, it is geared towards front-ending lots of static builders.
-This means you can (in the future) change your website to a completely different framework, like <a href="https://gohugo.io/">Hugo</a> or <a href="https://wordpress.com/">WordPress</a>, by changing a single line in a YAML file.</p>
-  </li>
-</ul>
-
-<h2 id="prerequisites">Prerequisites</h2>
-
-<p>ProjectSite is designed to use a very minimal set of prerequisite software components that are likely already installed for most modern software developers.
-All the complexities are encapsulated away in the builder Docker images.</p>
-
-<ul>
-  <li>Docker – For running the complex website builders.</li>
-  <li>Bash – Just needs to be on your system. (Not your required interactive shell).</li>
-  <li>Git – For installing the framework and publishing your site.</li>
-  <li>GitHub account – Sites are published to GitHub Pages.</li>
-  <li>GNU Make – Not strictly necessary but all actions have Makefile support by default.</li>
-</ul>
-
-<h2 id="installation">Installation</h2>
-
-<p>Installation is also a trivial clone and source style:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Clone this repository:
-git clone git@github.com:ingydotnet/project-site
-
-# In your Bash, Zsh (or similar) shell startup file:
-source /path/to/project-site/.rc
+<p>Just clone the GitHub repository:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/ingydotnet/project-site
 </code></pre></div></div>
 
-<h2 id="commands">Commands</h2>
+<p>Then enable it in your shell by sourcing the <code class="language-plaintext highlighter-rouge">.rc</code> file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>source /path/to/project-site/.rc
+</code></pre></div></div>
 
-<p>There are more than this, but here’s the commands you need to know:</p>
-
-<ul>
-  <li>Show all the <code class="language-plaintext highlighter-rouge">project-site</code> commandline commands and options:
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-site --help
-</code></pre></div>    </div>
-  </li>
-  <li>Create a new project-site website:
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-site --new my-project-site
-</code></pre></div>    </div>
-    <p>This will create a directory called <code class="language-plaintext highlighter-rouge">my-project-site</code> with your new website.</p>
-  </li>
-  <li>Build your site and view it locally:
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-site --local
-</code></pre></div>    </div>
-  </li>
-  <li>Publish your site live to the internet:
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>project-site --publish
-</code></pre></div>    </div>
-  </li>
-</ul>
-
-<h2 id="see-also">See Also</h2>
-
-<p>Here are some sites currently using ProjectSite:</p>
-
-<ul>
-  <li><a href="https://project-site.com">project-site.org</a></li>
-  <li><a href="https://yaml.com">yaml.com</a></li>
-</ul>
-
-<h2 id="license-and-copyright">License and Copyright</h2>
-
-<p>Copyright 2020. Ingy döt Net <a href="mailto:ingy@ingy.net">ingy@ingy.net</a>.</p>
-
-<p>ProjectSite is released under the MIT license.</p>
-
-<p>See the file License for more details.</p>
+<p>If you want to make it permanent, just add that last command to your Bash or Zsh (or other POSIX-ish) shell startup file.</p>
 
         </main>
       </div>
