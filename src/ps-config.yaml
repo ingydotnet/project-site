@@ -27,6 +27,10 @@ social:
 navbar:
   left:
   - type: logo
+  - name: Home
+    link: /home/
+  - name: Doc
+    link: /doc/
 
   right:
   - type: github
@@ -34,6 +38,7 @@ navbar:
 
 sidebar:
 - title: Home
+- title: Why ProjectSite?
 
 copyright:
   who: Ingy döt Net
