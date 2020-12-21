@@ -47,19 +47,19 @@ clean::
 $(OUTPUT_DIR):
 ifneq ($(PUBLISH_BRANCH),)
 	$(call add-branch-dir,$(PUBLISH_BRANCH))
+	touch $@/.project-site-build
 else
 	mkdir -p $@
 endif
 
 define add-branch-dir
 	@( \
-	  git rev-parse --verify --quiet $(1) >/dev/null || \
-	  git branch --track $(1) origin/$(1) \
+	  git rev-parse --verify --quiet $1 >/dev/null || \
+	  git branch --track $1 origin/$1 \
 	) || { \
-	    echo "No local branch '$(1)' found"; \
-	    echo "Try: project-site --make-branch=$(1)"; \
+	    echo "No local branch '$1' found"; \
+	    echo "Try: project-site --make-branch=$1"; \
 	    exit 1; \
 	}
 	git worktree add -f $@ $1
-	touch $@/.project-site-build
 endef
