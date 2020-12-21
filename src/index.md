@@ -8,7 +8,7 @@ Create a website for your Open Source project.
 
 ## Description
 
-The [ProjectSite](http://project-site.org) web site builder lets you define rich websites using only [Markdown](https://daringfireball.net/projects/markdown/) and [YAML](https://yaml.com).
+The [ProjectSite](https://github.com/ingydotnet/project-site/) web site builder lets you define rich websites using only [Markdown](https://en.wikipedia.org/wiki/Markdown) and [YAML](https://en.wikipedia.org/wiki/YAML).
 The software builds and publishes state off the art, mobile ready websites with a single command.
 The generated websites are static which means they are very secure and blindingly fast.
 
@@ -23,7 +23,7 @@ At this point there is only one builder available:
 
 * `bootstrap45`
 
-  This builder is a modified version of the tooling used to produce the [Bootsrap 4.5 documenation website](https://getbootstrap.com/docs/4.5/).
+  This builder is a modified version of the tooling used to produce the [Bootstrap 4.5 documentation website](https://getbootstrap.com/docs/4.5/).
   Its main features are that it has a site section contents sidebar on the left and page contents navigation on the right.
   It has a lot of other little formatting niceties and given that its Bootstrap's site you can expect it will work well everywhere.
 
@@ -32,7 +32,7 @@ At this point there is only one builder available:
   ProjectSite allows you to put YAML in more appropriate places and then collects it and puts it in the places Jekyll wants.
 
 * Even though ProjectSite only has one builder/backend at this early stage, it is geared towards front-ending lots of static builders.
-  This means you can (in the future) change your website to a completely different framework, like [Hugo](https://gohugo.io/) or [WordPress](https://wordpress.com/), by changing a single line in a YAML file.
+  This means you can (in the future) change your website to a completely different framework, like [Hugo](https://gohugo.io/), [Gatsby](https://www.gatsbyjs.com/) or [WordPress](https://wordpress.com/), by changing a single line in a YAML file.
 
 ## Prerequisites
 
@@ -86,7 +86,7 @@ There are more than this, but here's the commands you need to know:
 
 Here are some sites currently using ProjectSite:
 
-* [project-site.org](https://project-site.com)
+* [project-site.org](https://project-site.org)
 * [yaml.com](https://yaml.com)
 
 ## License and Copyright
@@ -95,4 +95,4 @@ Copyright 2020. Ingy döt Net <ingy@ingy.net>.
 
 ProjectSite is released under the MIT license.
 
-See the file License for more details.
+See the file [License](https://github.com/ingydotnet/project-site/blob/master/License) for more details.
