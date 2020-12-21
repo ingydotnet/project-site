@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=2030,2031
+
 set -e -u -o pipefail
 
 main() (
@@ -33,7 +35,7 @@ setup-config() (
   # Create the _config.yml file:
   set -x
   ps-config \
-    ./template/_config.yml \
+    "$t/_config.yml" \
     /input/ps-config.yaml \
     > _config.yml
 )
@@ -75,19 +77,62 @@ setup-data() (
 
 setup-pages() (
   # Copy over Markdown source files:
-  find $i -name ReadMe.md -prune -o -name '*.md' -print |
+  find "$i" -name ReadMe.md -prune -o -name '*.md' -print |
     while read -r file; do
-      setup-page "$file"
+      setup-page "$file" "${file%/*}"
+    done
+
+  find "$i" -name ps-config.yaml -prune -o -name '*.yaml' -print |
+    while read -r file; do
+      path=$(create-page "$file")
+      if [[ $path ]]; then
+        setup-page "${path}" "${file%/*}"
+      fi
     done
 )
 
-setup-page() (
-  file=$1
-  filepath=${file#$i/}
-  out_file=$s/$filepath
-  mkdir -p "$(dirname "$out_file")"
+create-page() (
+  yaml=$1
+  md=${yaml%.yaml}.md
+  dir=/tmp/${md#/*/}
+  dir=${dir%/*}
+  mkdir -p "$dir"
+  page=$dir/${md##*/}
+  front=$(perl -ne 'print unless /^---$/' "$yaml")
 
-  set -- $(IFS=/; echo ${file%/*})
+  if [[ -f $md ]]; then
+    grep -q '^content-url:' "$yaml" &&
+      die "'$yaml' contains 'content-url' key, but '$md' already exists."
+    grep -q '^---$' "$md" &&
+      die "'$md' may not contain front matter when '$yaml' exists."
+    body=$(< "$md")
+
+  else
+    url=$(grep '^content-url:' "$yaml" | awk '{print $2}' || true)
+
+    [[ $url ]] ||
+      die "'$yaml' doesn't have a 'content-url' entry"
+
+    body=$(curl -s "$url") ||
+      die "Failed to fetch 'content-url' content from '$url'"
+  fi
+
+  echo "$page"
+  cat <<... > "$page"
+---
+$front
+---
+$body
+...
+)
+
+setup-page() (
+  md_file=$1
+  src_path=$2
+  out_file=$s/${md_file#/*/}
+
+  # shellcheck disable=2046,2086
+  set -- $(IFS=/; echo ${md_file%/*})
   configs=()
 
   navbar=
@@ -102,11 +147,11 @@ setup-page() (
   fi
 
   path=''
-  while [[ $# > 0 ]]; do
+  while [[ $# -gt 0 ]]; do
     dir=$1; shift
     path+=/$dir
 
-    [[ $path == $i ]] || data+=${dir}__
+    [[ $path == "$i" ]] || data+=${dir}__
 
     if [[ -e $s/_data/${data}navbar.yaml ]]; then
       navbar=${data}navbar
@@ -119,24 +164,27 @@ setup-page() (
     [[ -f $config ]] && configs+=("$config")
   done
 
-  get-levels "/${filepath#/}"
+  get-levels "$src_path"
 
   export navbar sidebar
   export level1 level2 level3
 
+  mkdir -p "$(dirname "$out_file")"
+
   (
     set -x
-    ps-page "$file" "${configs[@]}" > "$out_file"
+    ps-page "$md_file" "${configs[@]}" > "$out_file"
   )
 )
 
 get-levels() {
-  level1= level2= level3=
-  path=$1
-  path=${path%/*.md}
-  path=${path%/}
-  path=${path#/}
+  level1='' level2='' level3=''
+  path=$1/
+  path=${path#/*/}
   [[ $path ]] || return 0
+
+  # XXX fix this shellcheck later. Might require bash 4.4+.
+  # shellcheck disable=2207,2086
   levels=($(IFS=/; echo $path))
   level1=${levels[0]-}
   level2=${levels[1]-}
@@ -191,7 +239,7 @@ publish-site() (
 
   (
     cd $o
-    find . -path './.git*' -prune -o -name CNAME -prune -o -path './*' -print |
+    find . -path './.git*' -prune -o -name CNAME -prune -o -path './*' -print0 |
       xargs rm -fr
   )
 

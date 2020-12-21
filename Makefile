@@ -12,14 +12,6 @@ builder-build:
 
 www:
 	$(call add-branch-dir,$@)
-	( \
-	    temp=$$(mktemp); \
-	    ( \
-		grep -B999 '\---' "$(HOME_FILE)"; \
-		cat ReadMe.md; \
-	    ) > "$$temp"; \
-	    mv "$$temp" "$(HOME_FILE)" \
-	)
 
 clean::
 	rm -fr base-* www

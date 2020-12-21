@@ -17,8 +17,11 @@ main = (page_file, configs...)->
 
   for config in configs
     data = yaml.parse file_read config
+    delete data['content-url']
     delete data.navbar
     delete data.sidebar
+    # TODO
+    # data = fix_keys data
     if data['project-site']?
       if (d = data.page)?
         data = d
@@ -37,5 +40,6 @@ main = (page_file, configs...)->
     front = merge front, data
 
   out "---\n#{yaml.stringify front}---\n#{text}"
+
 
 main process.argv[2..]...
