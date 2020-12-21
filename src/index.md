@@ -86,7 +86,7 @@ There are more than this, but here's the commands you need to know:
 
 Here are some sites currently using ProjectSite:
 
-* [project-site.org](https://project-site.com)
+* [project-site.org](https://project-site.org)
 * [yaml.com](https://yaml.com)
 
 ## License and Copyright
