@@ -7,27 +7,17 @@ require 'ingy-prelude'
 yaml = require 'yaml'
 {merge} = require 'merge-anything'
 
-main = (page_file, configs...)->
-  front = {}
-  front.navbar = process.env.navbar if process.env.navbar
-  front.sidebar = process.env.sidebar if process.env.sidebar
-  front.level1 = process.env.level1 || ''
-  front.level2 = process.env.level2 || ''
-  front.level3 = process.env.level3 || ''
+main = (page_file, config_files...)->
+  config = {}
+  config.navbar = process.env.navbar if process.env.navbar
+  config.sidebar = process.env.sidebar if process.env.sidebar
+  config.level1 = process.env.level1 || ''
+  config.level2 = process.env.level2 || ''
+  config.level3 = process.env.level3 || ''
 
-  for config in configs
-    data = yaml.parse file_read config
-    delete data['content-url']
-    delete data.navbar
-    delete data.sidebar
-    # TODO
-    # data = fix_keys data
-    if data['project-site']?
-      if (d = data.page)?
-        data = d
-      else
-        data = {}
-    front = merge front, data
+  for config_file in config_files
+    config = add_config config,
+      yaml.parse file_read config_file
 
   text = file_read page_file
   if m = text.match /^---\n([\s\S]*?\n)---\n/
@@ -36,10 +26,60 @@ main = (page_file, configs...)->
 
     # TODO Treat front_matter as template
 
-    data = yaml.parse front_matter
-    front = merge front, data
+    config = add_config config,
+      yaml.parse front_matter
 
-  out "---\n#{yaml.stringify front}---\n#{text}"
+  fix_config config, page_file
 
+  out "---\n#{yaml.stringify config}---\n#{text}"
+
+add_config = (config, hash)->
+  delete hash.navbar
+  delete hash.sidebar
+  hash = fix_keys hash
+
+  if hash.project_site?
+    data = {}
+    if hash.page?
+      data = hash.page
+    if hash.code?
+      data.code = hash.code
+  else
+    data = hash
+
+  config = merge config, data
+
+  if config.content_url?
+    content_url = config.content_url
+    delete config.content_url
+    if m = content_url.match \
+       /^https:\/\/raw\.githubusercontent\.com\/([\-\w]+)\/([\-\.\w]+)\/([\-\.\w]+)\/(.*)$/
+      [match, user, repo, branch, path] = m
+      config.view_edit_link =
+        "https://github.com/#{user}/#{repo}/blob/#{branch}/#{path}"
+    else
+      config.view_edit_link = content_url
+
+  return config
+
+fix_config = (config, page)->
+  code = config.code
+  delete config.code
+  if ! config.view_edit_link? and code? and code.repo?
+    branch = code.branch || 'master'
+    path = page.replace /^\/(input|tmp)\//, ''
+    config.view_edit_link =
+      "#{code.repo}/blob/#{branch}/src/#{path}"
+  config.layout ||= 'default'
+
+fix_keys = (config)->
+  for key, val of config
+    val = fix_keys(val) if typeof(val) != 'string'
+    if key.match /-/
+      delete config[key]
+      key = key.replace /-/g, '_'
+    config[key] = val
+
+  return config
 
 main process.argv[2..]...

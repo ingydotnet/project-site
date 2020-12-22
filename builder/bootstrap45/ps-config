@@ -25,7 +25,7 @@ main = (base, site)->
   out yaml.stringify config
 
 rework = (o)->
-  die "Top level ps-config.yaml must contain 'project-site' key" \
+  die "Top level PS.yaml must contain 'project-site' key" \
     unless o["project-site"]?
 
   if (build = o.build)?

@@ -36,7 +36,7 @@ setup-config() (
   set -x
   ps-config \
     "$t/_config.yml" \
-    /input/ps-config.yaml \
+    /input/PS.yaml \
     > _config.yml
 )
 
@@ -45,26 +45,26 @@ setup-theme() (
   set -x
   render-template \
     site/assets/scss/_variables.scss \
-    /input/ps-config.yaml
+    /input/PS.yaml
 )
 
 setup-data() (
   # Copy over Markdown and YAML source files:
-  find $i -name 'ps-*.yaml' -print |
+  find $i -name 'PS*.yaml' -print |
     while read -r file; do
       name=${file#$i/}
       name=${name%.yaml}
       name=${name//\//__}
-      if [[ $file == *ps-config* ]]; then
+      if [[ $file == */PS.yaml ]]; then
         navbar=$(y2j < "$file" | jq .navbar)
         if [[ $navbar && $navbar != null ]]; then
-          nav_name=${name/ps-config/navbar}
+          nav_name=${name/PS/navbar}
           echo "$navbar" | j2y > "$s/_data/$nav_name.yaml"
         fi
         if ! grep -q 'sidebar: false' "$file"; then
           sidebar=$(y2j < "$file" | jq .sidebar)
           if [[ $sidebar && $sidebar != null ]]; then
-            side_name=${name/ps-config/sidebar}
+            side_name=${name/PS/sidebar}
             echo "$sidebar" | j2y > "$s/_data/$side_name.yaml"
           fi
         fi
@@ -82,7 +82,7 @@ setup-pages() (
       setup-page "$file" "${file%/*}"
     done
 
-  find "$i" -name ps-config.yaml -prune -o -name '*.yaml' -print |
+  find "$i" -name PS.yaml -prune -o -name '*.yaml' -print |
     while read -r file; do
       path=$(create-page "$file")
       if [[ $path ]]; then
@@ -132,11 +132,11 @@ setup-page() (
   out_file=$s/${md_file#/*/}
 
   # shellcheck disable=2046,2086
-  set -- $(IFS=/; echo ${md_file%/*})
+  set -- $(IFS=/; echo $src_path)
   configs=()
 
-  navbar=
-  sidebar=
+  navbar=''
+  sidebar=''
   data=''
 
   [[ -e $s/_data/navbar.yaml ]] && navbar=navbar
@@ -160,7 +160,7 @@ setup-page() (
       sidebar=${data}sidebar
     fi
 
-    config=$path/ps-config.yaml
+    config=$path/PS.yaml
     [[ -f $config ]] && configs+=("$config")
   done
 

@@ -15,12 +15,12 @@ OUTPUT_DIR ?= .output
 LOCAL_PORT ?= 12345
 
 PUBLISH_BRANCH ?= $(shell \
-  grep '^  publish: ' $(INPUT_DIR)/ps-config.yaml | \
+  grep '^  publish: ' $(INPUT_DIR)/PS.yaml | \
   awk '{print $$2}' \
 )
 
 GITHUB_SOURCE_URL ?= $(shell \
-  grep '^  repo: ' $(INPUT_DIR)/ps-config.yaml | \
+  grep '^  repo: ' $(INPUT_DIR)/PS.yaml | \
   awk '{print $$2}' \
 )
 
