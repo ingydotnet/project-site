@@ -4,61 +4,65 @@ title: Why ProjectSite?
 This is the story of why ProjectSite was made, why I use it, and why you might want to as well.
 
 I'm really into Open Source.
-I've been doing since before the term was coined.
+I've been doing it since before the term was coined.
 I have a [lot of projects](http://github.com/ingydotnet) and a lot of domain names.
-When I think up of a cool new idea, I usually start by giving it a good name, and often I'll buy a domain name for it.
+When I think of a cool new idea, I usually start by giving it a good name, and often I'll buy a domain name for it.
 
 Sadly, I have very few actual web sites for those projects.
-Making and maintaining web sites has always been a pain in the butt, even when the projects were for building web sites.
+Making and maintaining web sites has always been a pain, even when the projects were for building web sites.
 Really all I want on these sites is good documentation, maybe a blog, maybe a book, maybe some demos.
 I actually really like writing content for all these things.
 
 What I've really needed and wanted is a way to make websites by just writing the content and pressing a button.
 That's what ProjectSite is for me.
-Of course there no end of existing frameworks for doing this, so bear with me while I explain why I needed something more.
+Of course there is no end of existing frameworks for doing this, so bear with me while I explain why I needed something more.
 
-I actually made a really terrible toolset that I called `project-site` around 2010 that I used to make a half dozen really basic sites for some of my projects I was excited about at the time.
-This year I decided to use the same name but make it modern.
+I actually made a really terrible toolset that I called `project-site` around 2010.
+I used it to make a half dozen really basic sites, for some of my projects I was excited about at the time.
+This year I decided to use the same name, but rebuild it using modern web technology.
 
 I've been a big fan of static sites for the last 10 years.
-With the right JavaScript parts they can be made to be as engaging and interactive as any program driven site.
+With the right JavaScript parts they can be made to be as engaging and interactive as any program-driven site.
 On top of that they end up being very fast and very secure.
 
 I've also been an avid user of [GitHub](ihttps://github.com/) for at least as long.
 GitHub embraces and supports static sites with [GitHub Pages](https://pages.github.com/).
-The sites they host are fast and they now support SSL with no work.
+The sites they host are fast and they now support SSL with the check of a checkbox.
 This website is built by ProjectSite and hosted on GitHub Pages; as are all ProjectSite sites, by default.
 
 ## What about Jekyll and Hugo, etc?
 
 This is actually the main point of ProjectSite!
 
-With ProjectSite you pretty much just write content (in [Markdown](https://en.wikipedia.org/wiki/Markdown)) and configuration (in [YAML](https://en.wikipedia.org/wiki/YAML)).
+With ProjectSite you just write content (in [Markdown](https://en.wikipedia.org/wiki/Markdown)) and configuration (in [YAML](https://en.wikipedia.org/wiki/YAML)).
 You organize the content into a directory structure that matches your site layout.
 Every layer inherits the config from the layer above it.
 
-ProjectSite takes your input and blasts it into a [Jekyll](https://jekyllrb.com/) or [Hugo](https://gohugo.io/) or etc **builder** environment that does its thing without you needing to learn the details.
+> Note: You can tweak a lot more things if you want to make your site a SpecialSnowflake™. :-D
+
+ProjectSite takes your input and blasts it into a [Jekyll](https://jekyllrb.com/) or [Hugo](https://gohugo.io/) or other static site **builder** environment that does its thing without you needing to learn the details.
 That means you can migrate your entire site from a Jekyll based builder to a Hugo based one, by changing one line in a YAML file.
 
 ### Jekyll is Hard
 
-Don't get me wrong.
+Don't get me wrong…
+
 Jekyll did an outstanding job of making building a website way easier than doing it by hand.
 But creating a new site with Jekyll or any other framework has a learning curve and still involves a lot of development.
 The advantage is that you can build a website that does almost anything you want it to.
 On the other hand, not everyone (like me) wants all that flexibility.
 
-Say you stumble upon a static site that you really like, and you just want your site to be pretty much the same; maybe with a few different colors and buttons.
+Say you stumble upon a static site that you really like, and you want your site to be pretty much the same; maybe with a few different colors and buttons.
 Well that's not so hard, because most of these sites point back to their sources, often on GitHub.
 All you need to do is fork, clone, tweak, commit and push.
-If you have 20 projects, all you need to do is do that 20 times.
+If you have 20 projects, all you need to do is repeat that 20 times.
 
-Eventually you'll find another project's site that you like, and want to change 10 of your sites to that.
+Eventually you'll find another project's site that you like, and want to change 10 of your sites to be like that one.
 Now you need to figure out what you tweaked when you made those sites and migrate them into the right tweaks in the new system.
 
 There's another problem you might run into.
-If the site you built over is more than a year old, you might have trouble recreating the build system for it locally.
-All the package pinning tools out there are meant to prevent this, but sadly sometimes it just doesn't work out as planned.
+If the site you built over is more than a year old, you might have trouble installing the build system for it locally.
+All the package pinning tools out there are meant to prevent this, but sadly sometimes they just don't work as planned.
 
 ProjectSite deals with all this by having builders.
 A builder uses a specific framework, configured a certain way.
@@ -66,7 +70,7 @@ ProjectSite encapsulates the framework and configuration into a [Docker](https:/
 
 ## Give me an Example
 
-The real world driver for this was that I wanted to make a new <https://yaml.com>.
+The real world driver for creating ProjectSite was that I wanted to make a new <https://yaml.com>.
 There is some renewed energy in the development of the YAML data language, and I wanted to get that information out into the world.
 I also realized that if I was happy with the new site, I wanted to very quickly make 20 more sites that looked and worked the same.
 
@@ -79,15 +83,14 @@ I gave up until the Fall, and then decided that I really liked the [Bootstrap 4.
 Jekyll 5.0 had moved on to Hugo, but I was easily able to build the doc site from the [4.5 branch](https://github.com/twbs/bootstrap/tree/v4.5.3).
 I wrote a Dockerfile to set up the build environment, and started figuring out how to rearrange things to make the site work like I wanted it to.
 
-It was and still is a lot of work.
-It's worth it to me because I know that all the hard work isn't wasted on a single site.
+Learning a new framework and using it to make a site, was and still is a lot of work.
+Investing that learning into the creation of a ProjectSite **builder** makes it worth it to me because I know that all the hard work is reusable.
 As I make my 20 sites, I know that every improvement will be able to benefit all of them.
-If the new change needs to be used only by some sites, I'll make it into a config option.
-Simple.
+If a certain improvement needs to be used only by some sites, I can make that one into a configuration option.
 
 I gave the builder a name "bootstrap45".
 At the moment this is the only builder available.
-As I add functionality I try to stay aware that it will need to work with future builders.
+As I add functionality, I'll be aware the it needs to work with future builders.
 
 ## The Good Parts
 
@@ -182,9 +185,9 @@ Hope you found it yummy!
 If you have a project that you want a decent website for with the absolute minimum fuss, ProjectSite might be for you.
 Especially if you just want to write the content and pick out a few layout options.
 
-If you want your site to be unique, then it's probably not what you want.
+If you want your site to be highly customized, then ProjectSite is probably not what you want.
 
 However if you end up crafting something so excellent that you know everyone will be jealous, and you are willing to share...
-Consider crafting it into a ProjectSite builder!
+Consider crafting it into a ProjectSite builder, for everyone to use.
 
-I might know of 20 or so sites that would switch to it. `:-)`
+In return, I'll consider switching my sites to use your builder!
