@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.0.2
+VERSION=0.0.3
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd) || exit
 
