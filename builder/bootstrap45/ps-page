@@ -9,15 +9,20 @@ yaml = require 'yaml'
 
 main = (page_file, config_files...)->
   config = {}
-  config.navbar = process.env.navbar if process.env.navbar
-  config.sidebar = process.env.sidebar if process.env.sidebar
-  config.level1 = process.env.level1 || ''
-  config.level2 = process.env.level2 || ''
-  config.level3 = process.env.level3 || ''
+  for env, val of process.env
+    if env.match /^PSVAR_/
+      config[env[6..]] = val
 
   for config_file in config_files
     config = add_config config,
       yaml.parse file_read config_file
+
+  if config.sidebar?
+    config.basepath = config.sidebar \
+      .replace(/^sidebar$/, '') \
+      .replace(/__sidebar$/, '') \
+      .replace(/__/g, '/')
+    config.basepath += '/' if config.basepath
 
   text = file_read page_file
   if m = text.match /^---\n([\s\S]*?\n)---\n/
