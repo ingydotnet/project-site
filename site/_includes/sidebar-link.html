@@ -1,14 +1,9 @@
-{% assign url = site.baseurl | default: '' -%}
-{% if include.p1 != '' -%}
-  {% assign url = url | append: '/' | append: include.p1 -%}
+{% assign url = site.baseurl | default: '/' -%}
+{% assign url = url | append: page.basepath -%}
+{% if side_slug1 -%}
+  {% assign url = url | append: side_slug1 | append: '/' -%}
 {% endif -%}
-{% if include.p2 != '' -%}
-  {% assign url = url | append: '/' | append: include.p2 -%}
-{% endif -%}
-{% if include.p3 != '' -%}
-  {% assign url = url | append: '/' | append: include.p3 -%}
-{% endif -%}
-{% if url == '' -%}
-  {% assign url = '/' -%}
+{% if side_slug2 -%}
+  {% assign url = url | append: side_slug2 | append: '/' -%}
 {% endif -%}
 <a class="bd-toc-link" href="{{url}}">{{include.text}}</a>
