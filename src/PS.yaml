@@ -14,7 +14,7 @@ page:
   toc: true
 
 theme:
-  color: 232323
+  color: 885c39
   logo:
     type: template
     letters: PS
