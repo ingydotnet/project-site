@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+ps-build --local
+
+(
+  set +x
+  cd /ps/
+  while true; do
+    sleep 2
+    if [[ $(find /input /ps /common -type f -newer /build/.project-site-build) ]]; then
+      make build
+    fi
+  done
+) &
+
+(
+  cd /build
+  bundle exec jekyll serve --host 0.0.0.0
+)

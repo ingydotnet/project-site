@@ -1,0 +1,9 @@
+{% assign url = site.baseurl | append: '/' -%}
+{% assign url = url | append: page.basepath -%}
+{% if side_slug1 -%}
+  {% assign url = url | append: side_slug1 | append: '/' -%}
+{% endif -%}
+{% if side_slug2 -%}
+  {% assign url = url | append: side_slug2 | append: '/' -%}
+{% endif -%}
+<a class="bd-toc-link" href="{{url}}">{{include.text}}</a>

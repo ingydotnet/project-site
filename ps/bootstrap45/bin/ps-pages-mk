@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+
+set -e -u -o pipefail
+
+main() (
+  declare -A conf_rules
+  declare -A nav_bars
+
+  files=()
+  gen_files=()
+
+  setup-navdata
+
+  for input in $(find /input -name '*.md' -o -name '[a-z]*'.yaml); do
+    yaml_file=false
+    if [[ $input == *.yaml ]]; then
+      grep -q '^content-url: .' "$input" || continue
+      yaml_file=true
+      conf=$input
+      input=/tmp/site/${input#/input/}
+      input=${input%.yaml}.md
+      build=/build/${input#/tmp/}
+      gen_files+=("$input")
+    else
+      conf=/tmp/conf/${input#/input/}
+      conf=${conf%/*.md}/PS.yaml
+      build=/build/site/${input#/input/}
+      confs=($(find-confs "$input"))
+      conf_rules[$conf]=${confs[*]}
+    fi
+
+    gen_files+=("$conf")
+    files+=("$build")
+
+    ps_vars=($(set-psvars ${input%/*}))
+    vars=${ps_vars[*]}
+    vars=${vars:+$vars }
+
+    cat <<...
+$build: $input $conf
+	${vars}ps-page \$^ > \$@
+
+...
+
+    if $yaml_file; then
+      cat <<...
+# XXX
+$input: $conf
+	grep '^content-url:' \$< | \\
+	  head -n1 | \\
+	  awk '{print \$\$2}' | \\
+	  xargs -n1 curl -s > \$@
+
+...
+    fi
+  done
+
+  for conf in "${!conf_rules[@]}"; do
+    cat <<...
+$conf: ${conf_rules[$conf]}
+	ps-merge \$^ > \$@
+
+...
+  done
+
+  set-favicon
+
+  dirs=($(dirname "${gen_files[@]}" | sort | uniq))
+
+  cat <<...
+PAGES_FILES := ${files[*]}
+
+PAGES_DIRS  := ${dirs[*]}
+...
+)
+
+find-confs() (
+  input=${1%/*}
+  local path=''
+  for dir in $(IFS=/; echo $input); do
+    path+="/$dir"
+    if [[ -f $path/PS.yaml ]]; then
+      echo "$path/PS.yaml"
+    fi
+  done
+)
+
+setup-navdata() {
+  local name target navbar sidebar
+  mkdir -p /build/site/_data
+  while read -r file; do
+    name=${file#/input/}
+    name=${name%.yaml}
+    name=${name//\//__}
+    navbar=$(ps-y2j < "$file" | jq .navbar)
+    if [[ $navbar && $navbar != null ]]; then
+      target=/build/site/_data/${name/PS/navbar}.yaml
+      files+=("$target")
+      nav_bars[$target]=ok
+      cat <<...
+$target: $file
+	cat \$< | ps-y2j | jq .navbar | ps-j2y > \$@
+
+...
+    fi
+    if ! grep -q 'sidebar: false' "$file"; then
+      sidebar=$(ps-y2j < "$file" | jq .sidebar)
+      if [[ $sidebar && $sidebar != null ]]; then
+        target=/build/site/_data/${name/PS/sidebar}.yaml
+        files+=("$target")
+        nav_bars[$target]=ok
+        cat <<...
+$target: $file
+	cat \$< | ps-y2j | jq .sidebar | ps-j2y > \$@
+
+...
+      fi
+    fi
+  done <<< "$(find /input -name 'PS*.yaml')"
+}
+
+set-psvars() (
+  # shellcheck disable=2046,2086
+  set -- $(IFS=/; echo $1)
+
+  navbar=''
+  sidebar=''
+  data=''
+
+  [[ ${nav_bars[/build/site/_data/navbar.yaml]-} ]] && navbar=navbar
+  if [[ ${nav_bars[/build/site/_data/sidebar.yaml]-} ]]; then
+    sidebar=sidebar
+  fi
+
+  path=''
+  while [[ $# -gt 0 ]]; do
+    dir=$1; shift
+    path+=/$dir
+
+    [[ $path == /input ]] || data+=${dir}__
+
+    if [[ ${nav_bars[/build/site/_data/${data}navbar.yaml]-} ]]; then
+      navbar=${data}navbar
+    fi
+    if [[ ${nav_bars[/build/site/_data/${data}sidebar.yaml]-} ]]; then
+      sidebar=${data}sidebar
+    fi
+  done
+
+  for var in navbar sidebar; do
+    if [[ ${!var} ]]; then
+      echo "PSVAR_$var=${!var}"
+    fi
+  done
+)
+
+set-favicon() {
+  [[ $(ps-y2j < "/input/PS.yaml" | jq '.theme.logo.letters' | grep -v null) ]] ||
+    return 0
+
+  cat <<'...'
+/build/site/assets/img/favicon/favicon.png: /tmp/favicon.svg
+	rsvg-convert $< > $@
+ 
+/tmp/favicon.svg: /tmp/config.yaml /ps/base/site/_includes/icons/logo.svg
+	liquidize $^ > $@
+
+/tmp/config.yaml: /build/_config.yml
+	(echo site:; perl -pe 's/^/  /' $<) > $@
+
+...
+
+  files+=(/build/site/assets/img/favicon/favicon.png)
+}
+
+die() ( echo "$*" >&2; exit 1 )
+
+main "$@"
+
+# vim: ft=sh sw=2:

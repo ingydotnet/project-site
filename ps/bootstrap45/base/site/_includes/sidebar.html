@@ -1,0 +1,32 @@
+<nav class="collapse bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  {% assign url_parts = page.url | split: '/' -%}
+  {% for side_group in site.data[page.sidebar] -%}
+    {% assign first_page = side_group.pages | first -%}
+    {% assign side_slug1 = side_group.slug | default: (side_group.title | slugify) -%}
+    {% assign side_slug2 = first_page.title | slugify -%}
+    {% assign active1 = '' -%}
+    {% if side_slug1 == url_parts[-1] or side_slug1 == url_parts[-2] -%}
+      {% assign active1 = ' active' -%}
+    {% endif -%}
+
+    <div class="bd-toc-item{{active1}}">
+      {% include sidebar-link.html text=side_group.title %}
+
+      <ul class="nav bd-sidenav">
+        {%- for page_entry in side_group.pages -%}
+          {%- assign side_slug2 = page_entry.slug | default: (page_entry.title | slugify) -%}
+
+          {%- assign active2 = '' -%}
+          {%- if active1 != '' and url_parts[-1] == side_slug2 -%}
+            {%- assign active2 = 'active bd-sidenav-active' -%}
+          {%- endif -%}
+
+          {% assign link_text = '&nbsp;&nbsp;' | append: page_entry.title %}
+          <li class="{{active2}}">
+            {% include sidebar-link.html text=link_text %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endfor -%}
+</nav>

@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=2030,2031
+
+set -e -u -o pipefail
+
+main() (
+  set -x
+
+  [[ ${1-} == --local ]] &&
+    ps_local=true ||
+    ps_local=false
+
+  clean-dirs
+
+  touch-files
+
+  make-build
+
+  build-site
+
+  $ps_local && return
+  publish-site
+)
+
+clean-dirs() (
+  $ps_local || (
+    cd /output/
+
+    find . -path './.git*' -prune -o -name CNAME -prune -o -path './*' -print0 |
+      xargs rm -fr
+  )
+
+  find /tmp -name '*.yaml' | xargs rm -f
+  find /tmp -empty -type d | xargs rm -fr
+
+  (
+    cd /build/
+    ls -A | xargs rm -fr
+  )
+)
+
+touch-files() (
+  find /ps/base/ /ps/template/ -type f | xargs touch
+)
+
+make-build() (
+  cd /ps/
+  make build
+)
+
+build-site() (
+  cd /build/
+  npm run build
+  bundle exec jekyll build --config=_config.yml
+)
+
+publish-site() (
+  (
+    cd /build/_gh_pages
+
+    find . -path './.git*' -prune -o -path './*' -print |
+      cpio -dump /output/
+  )
+
+  date > /output/.project-site-build
+)
+
+# Combine foo.{md,yaml} or fetch foo.md from URL in foo.yaml:
+create-page() (
+  yaml=$1
+  md=${yaml%.yaml}.md
+  dir=/tmp/${md#/*/}
+  dir=${dir%/*}
+  mkdir -p "$dir"
+  page=$dir/${md##*/}
+  front=$(perl -ne 'print unless /^---$/' "$yaml")
+
+  if [[ -f $md ]]; then
+    grep -q '^content-url:' "$yaml" &&
+      die "'$yaml' contains 'content-url' key, but '$md' already exists."
+    grep -q '^---$' "$md" &&
+      die "'$md' may not contain front matter when '$yaml' exists."
+    body=$(< "$md")
+
+  else
+    url=$(grep '^content-url:' "$yaml" | awk '{print $2}' || true)
+
+    [[ $url ]] ||
+      die "'$yaml' doesn't have a 'content-url' entry"
+
+    body=$(curl -s "$url") ||
+      die "Failed to fetch 'content-url' content from '$url'"
+  fi
+
+  echo "$page"
+  cat <<... > "$page"
+---
+$front
+---
+$body
+...
+)
+
+check-directory() (
+  [[ -d $1 ]] ||
+    die "Error: $2 directory '$1' does not exist"
+)
+
+die() (printf "%s\n" "$@" >&2; exit 1)
+
+main "$@" |& tee /tmp/out

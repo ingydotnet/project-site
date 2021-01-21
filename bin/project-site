@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.0.3
+VERSION=0.0.4
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd) || exit
 
@@ -25,18 +25,18 @@ new           Create a new project-site web site
 build         Build the project-site
 local         Start a local web server for the site
 publish       Publish your web site
-make-branch=  Create a publishing branch (eg gh-pages)
 shell         Start a shell in the builder container
 builders      List builders available
+make-branch=  Create a publishing branch (eg gh-pages)
+ 
+builder=      Builder to use (see --builders)
+input-dir=    Input/Source/Content directory
+build-dir=    Build/Intermediate directory
+output-dir=   Output/Publish directory
+port=         Port to run local server on
+ 
 version       Print the project-site version
 help          Show the command summary
- 
-i,input=      Input/Source/Content directory
-o,output=     Output/Build/Publish directory
-b,builder=    Builder to use (see --builders)
-p,port=       Port to run local server on
-v,verbose     Show more output
- 
 x,debug       Print lots of debugging info
 "
 
@@ -58,56 +58,51 @@ command:new() (
     mkdir -p "$dir"
   fi
 
-  [[ $PROJECT_SITE_ROOT ]] ||
-    error "The 'project-site' command was not installed properly"
-
   (
     set -x
-    cp "$PROJECT_SITE_ROOT/share/ReadMe.md" "$dir"
-    cp "$PROJECT_SITE_ROOT/share/Makefile" "$dir"
-    cp -r "$PROJECT_SITE_ROOT/share/src" "$dir"
+    cp "$root/share/ReadMe.md" "$dir"
+    cp "$root/share/Makefile" "$dir"
+    cp -r "$root/share/src" "$dir"
   )
 
   echo "New project-site created in '$dir/'"
 )
 
 command:build() (
-  check-options +input +output +builder
-
-  mkdir -p "$option_output"
+  check-options +input-dir +build-dir +output-dir +builder
 
   docker-run ps-build
 )
 
 command:local() (
-  check-options +input +builder
+  check-options +input-dir +build-dir +builder
 
-  unset option_output
+  unset option_output_dir
 
   docker-run ps-local
 )
 
 command:publish() (
-  check-options +output
+  check-options +output-dir
 
-  [[ -d $option_output ]] ||
-    error "The --output directory '$option_output' does not exist"
-  [[ -e $option_output/.git ]] ||
-    error "The --output directory '$option_output' is not a git working directory"
+  [[ -d $option_output_dir ]] ||
+    error "The --output-dir directory '$option_output_dir' does not exist"
+  [[ -e $option_output_dir/.git ]] ||
+    error "The --output-dir directory '$option_output_dir' is not a git working directory"
 
   command:build "$@"
 
   if [[ ${PROJECT_SITE_CNAME-} ]]; then
     if [[ $PROJECT_SITE_CNAME == none ]]; then
-      rm -f "$option_output/CNAME"
+      rm -f "$option_output_dir/CNAME"
     else
-      echo "$PROJECT_SITE_CNAME" > "$option_output/CNAME"
+      echo "$PROJECT_SITE_CNAME" > "$option_output_dir/CNAME"
     fi
   fi
 
   (
     set -x
-    cd "$option_output"
+    cd "$option_output_dir"
     git add -A .
     git commit -m "$(date)"
     git push
@@ -115,8 +110,8 @@ command:publish() (
 
   echo
   echo "Your site has been published to the internet."
-  if [[ -e $option_output/CNAME ]]; then
-    domain=$(cat "$option_output/CNAME")
+  if [[ -e $option_output_dir/CNAME ]]; then
+    domain=$(cat "$option_output_dir/CNAME")
     echo "Visit https://$domain/"
     return
   fi
@@ -207,38 +202,29 @@ command:version() (
 )
 
 docker-run() (
-  cmd=$1
-
   options+=(
     --publish "$option_port:$option_port"
     --user "$(id -u $USER):$(id -g $USER)"
+    --volume "$root/ps/common:/common"
   )
-  if [[ $option_input ]]; then
-    options+=(--volume $option_input:/input)
+  if [[ $option_input_dir ]]; then
+    options+=(--volume $option_input_dir:/input)
   fi
-  if [[ $option_output ]]; then
-    [[ -d $option_output ]] ||
-      mkdir -p "$option_output"
-    touch "$option_output/.project-site-build"
-    options+=(--volume $option_output:/output)
+  if [[ $option_build_dir ]]; then
+    rm -fr "$option_build_dir"
+    mkdir -p "$option_build_dir"
+    options+=(--volume $option_build_dir:/build)
+  fi
+  if [[ $option_output_dir ]]; then
+    [[ -d $option_output_dir ]] ||
+      mkdir -p "$option_output_dir"
+    options+=(--volume $option_output_dir:/output)
   fi
   if [[ $option_builder ]]; then
-    base_name=base-$option_builder
-    base_dir=$root/$base_name
-    if [[ ! -d $base_dir ]]; then
-      (
-        cd "$root"
-        git branch --track "$base_name" "origin/$base_name" \
-          2>/dev/null || true
-        git worktree add -f "$base_name" "$base_name"
-      )
-    fi
-    (
-      cd "$base_dir"
-      git reset --hard
-      git clean -dxf
+    options+=(
+      --env "PROJECT_SITE_BUILDER=$option_builder"
+      --volume "$root/ps/$option_builder:/ps"
     )
-    options+=(--volume "$base_dir:/builder")
   fi
   if [[ $option_port ]]; then
     options+=(--env "PROJECT_SITE_PORT=$option_port")
@@ -251,16 +237,17 @@ docker-run() (
   docker run -it --rm \
     "${options[@]}" \
     "$docker_image" \
-    bash -c "$cmd"
+    bash -c "$*"
 )
 
 check-options() {
   for arg; do
     if [[ $arg == +* ]]; then
+      arg=${arg//-/_}
       option=option_${arg#+}
       if [[ ! ${!option} ]]; then
-        if [[ $option == input ]]; then
-          option_input=$PWD
+        if [[ $option == input_dir ]]; then
+          option_input_dir=$PWD
           continue
         fi
         error "No --builder=... option specified"
@@ -288,10 +275,12 @@ get-options() {
   [[ $cmd != unknown ]] ||
     error "No command option specified"
 
-  [[ $option_input ]] &&
-    option_input=$(abs-path "$option_input")
-  [[ $option_output ]] &&
-    option_output=$(abs-path "$option_output")
+  [[ $option_input_dir ]] &&
+    option_input_dir=$(abs-path "$option_input_dir")
+  [[ $option_output_dir ]] &&
+    option_output_dir=$(abs-path "$option_output_dir")
+  [[ $option_build_dir ]] &&
+    option_build_dir=$(abs-path "$option_build_dir")
   [[ $option_port ]] ||
     option_port=12345
 

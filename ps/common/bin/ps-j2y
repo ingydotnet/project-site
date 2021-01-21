@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const yaml = require("yaml");
+const j = fs.readFileSync("/dev/stdin").toString();
+const y = yaml.stringify(JSON.parse(j));
+fs.writeFileSync("/dev/stdout", y);

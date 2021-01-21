@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-set -x
-
-ps-build --local
-
-bundle exec jekyll serve --host 0.0.0.0

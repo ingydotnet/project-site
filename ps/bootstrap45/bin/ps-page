@@ -1,0 +1,89 @@
+#!/usr/bin/env coffee
+
+process.env.NODE_PATH = '/usr/local/node_modules'
+require("module").Module._initPaths()
+
+require 'ingy-prelude'
+yaml = require 'yaml'
+{merge} = require 'merge-anything'
+
+main = (page_file, config_file)->
+  config = {}
+  for env, val of process.env
+    if env.match /^PSVAR_/
+      config[env[6..]] = val
+
+  config = add_config config,
+    yaml.parse file_read config_file
+
+  if config.sidebar?
+    config.basepath = config.sidebar \
+      .replace(/^sidebar$/, '') \
+      .replace(/__sidebar$/, '') \
+      .replace(/__/g, '/')
+    config.basepath += '/' if config.basepath
+
+  text = file_read page_file
+  if m = text.match /^---\n([\s\S]*?\n)---\n/
+    front_matter = m[1]
+    text = text[(front_matter.length + 8)..]
+
+    # TODO Treat front_matter as template
+
+    config = add_config config,
+      yaml.parse front_matter
+
+  fix_config config, page_file
+
+  out "---\n#{yaml.stringify config}---\n#{text}"
+
+add_config = (config, hash)->
+  delete hash.navbar
+  delete hash.sidebar
+  hash = fix_keys hash
+
+  if hash.project_site?
+    data = {}
+    if hash.page?
+      data = hash.page
+    if hash.code?
+      data.code = hash.code
+  else
+    data = hash
+
+  config = merge config, data
+
+  if config.content_url?
+    content_url = config.content_url
+    delete config.content_url
+    if m = content_url.match \
+       /^https:\/\/raw\.githubusercontent\.com\/([\-\w]+)\/([\-\.\w]+)\/([\-\.\w]+)\/(.*)$/
+      [match, user, repo, branch, path] = m
+      config.view_edit_link =
+        "https://github.com/#{user}/#{repo}/blob/#{branch}/#{path}"
+    else
+      config.view_edit_link = content_url
+
+  return config
+
+fix_config = (config, page)->
+  code = config.code
+  delete config.code
+  if ! config.view_edit_link? and code? and code.repo?
+    branch = code.branch || 'master'
+    path = page.replace /^\/(input|tmp)\//, ''
+    config.view_edit_link =
+      "#{code.repo}/blob/#{branch}/src/#{path}"
+  config.layout ||= 'default'
+
+fix_keys = (config)->
+  for key, val of config
+    val = fix_keys(val) if typeof(val) != 'string'
+    if key.match /-/
+      delete config[key]
+      key = key.replace /-/g, '_'
+    config[key] = val
+
+  return config
+
+main process.argv[2..]...

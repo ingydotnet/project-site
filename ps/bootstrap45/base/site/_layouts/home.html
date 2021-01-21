@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% include header.html %}
+  </head>
+  <body>
+    {% include skippy.html %}
+
+    {% include navbar.html %}
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 order-md-1 text-center text-md-left pr-md-5">
+          <h1 class="mb-3">{{ page.title }}</h1>
+          <p class="lead mb-4">{{ page.description }}</p>
+          {{ content }}
+        </div>
+      </div>
+    </div>
+
+    {% include footer.html %}
+    {% include scripts.html %}
+  </body>
+</html>

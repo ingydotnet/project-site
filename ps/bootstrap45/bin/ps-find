@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -eu
+
+main() (
+  command -v "find-$1" >/dev/null ||
+    die "Can't run ps-files for '$1'"
+
+  "find-$1"
+)
+
+find-base-files() (
+  f /base/Gemfile
+  f /base/Gemfile.lock
+  f /base/package.json
+  f /base/.eslintrc.json
+  f /base/.eslintignore
+  f /base/.stylelintignore
+  f /base/.stylelintrc
+
+  f /base/build/
+  f /base/js/ |
+    grep -Ev '/(dist|tests)/'
+  f /base/scss/
+
+  f /base/site/_data/ |
+    grep -Ev '/(nav|examples)\.yml$'
+  f /base/site/_includes/ |
+    grep -Ev '/docs-(side|nav)bar\.html$'
+  f /base/site/_layouts/ |
+    grep -Ev '/(docs|examples)\.html$'
+
+  f /base/site/robots.txt
+  f /base/site/sw.js
+)
+
+find-base-asset-files() (
+  f /base/site/docs/4.5/assets/ |
+    grep -Ev '/assets/img/(examples|favicons)/' |
+    grep -Ev '/assets/scss/_component-examples\.scss$'
+)
+
+find-ps-files() (
+  f /ps/base/
+)
+
+find-template-files() (
+  f /ps/template/
+)
+
+f() (
+  find "$1" -type f |
+    grep -v '\.swp$'
+)
+
+die() ( echo "$*" >&2; exit 1 )
+
+main "$@"

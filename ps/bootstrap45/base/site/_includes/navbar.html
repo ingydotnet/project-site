@@ -1,0 +1,50 @@
+<header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar">
+  <a class="navbar-brand mr-0 mr-md-2" href="{{site.baseurl}}/" aria-label="Bootstrap">
+    {%- include icons/logo.svg width="36" height="36" class="d-block" -%}
+  </a>
+
+  {% assign section = page.path | split: '/' | first | default: '' %}
+  {% if section == 'index.md' %}{% assign section = '' %}{% endif %}
+  <div class="navbar-nav-scroll">
+    <ul class="navbar-nav bd-navbar-nav flex-row">
+      {% for entry in site.data[page.navbar].left %}
+        {% assign nav_link = entry.link | slugify %}
+        <li class="nav-item">
+            <a class="nav-link{% if section == nav_link %} active{% endif %}" href="{{site.baseurl}}{{entry.link}}">{{entry.name}}</a>
+        </li>
+      {% endfor %}
+
+    </ul>
+  </div>
+
+  <ul class="navbar-nav ml-md-auto">
+
+    {% for entry in site.data[page.navbar].right %}
+      {% if entry.type == 'github' %}
+        <li class="nav-item">
+          <a class="nav-link pl-2 pr-1 mx-1 py-3 my-n2" href="{{site.github}}/" target="_blank" rel="noopener" aria-label="GitHub">
+            {%- include icons/github.svg class="navbar-nav-svg" -%}
+          </a>
+        </li>
+      {% endif %}
+
+      {% if entry.type == 'twitter' %}
+        <li class="nav-item">
+          <a class="nav-link px-1 mx-1 py-3 my-n2" href="{{site.twitter}}/" target="_blank" rel="noopener" aria-label="Twitter">
+            {%- include icons/twitter.svg class="navbar-nav-svg" -%}
+          </a>
+        </li>
+      {% endif %}
+
+      {% if entry.type == 'slack' %}
+        <li class="nav-item">
+          <a class="nav-link px-1 mx-1 py-3 my-n2" href="{{site.slack}}/" target="_blank" rel="noopener" aria-label="Slack">
+            {%- include icons/slack.svg class="navbar-nav-svg" -%}
+          </a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+  </ul>
+
+</header>
