@@ -51,10 +51,10 @@ clean::
 $(PS_OUTPUT_DIR):
 ifneq ($(PS_PUBLISH_BRANCH),)
 	$(call add-branch-dir,$(PS_PUBLISH_BRANCH))
-	touch $@/.project-site-build
 else
 	mkdir -p $@
 endif
+	touch $@/.project-site-build
 
 define add-branch-dir
 	@( \

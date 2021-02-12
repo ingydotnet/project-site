@@ -38,6 +38,22 @@ clean-dirs() (
     cd /build/
     ls -A | xargs rm -fr
   )
+
+  [[ -d /output/ ]] || return 0
+
+  (
+    rm -fr $(
+      find /output -name index.html |
+        xargs -n1 dirname
+    )
+    find /output/ -type d -empty | xargs -I: rmdir :
+    rm -fr /output/assets
+    rm -fr /output/dist
+    rm -f /output/favicon.*
+    rm -f /output/index.html
+    rm -f /output/robots.txt
+    rm -f /output/sitemap.xml
+  )
 )
 
 touch-files() (

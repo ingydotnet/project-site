@@ -36,7 +36,7 @@ find-base-files() (
 
 find-base-asset-files() (
   f /base/site/docs/4.5/assets/ |
-    grep -Ev '/assets/img/(examples|favicons)/' |
+    grep -Ev '/assets/img/' |
     grep -Ev '/assets/scss/_component-examples\.scss$'
 )
 

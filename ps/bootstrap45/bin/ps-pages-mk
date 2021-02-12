@@ -168,9 +168,15 @@ set-favicon() {
 /tmp/config.yaml: /build/_config.yml
 	(echo site:; perl -pe 's/^/  /' $<) > $@
 
+/build/favicon.ico: /build/site/assets/img/favicon/favicon.png
+	convert -density 128x128 -background none $< -resize 128x128 $@
+
 ...
 
-  files+=(/build/site/assets/img/favicon/favicon.png)
+  files+=(
+    /build/site/assets/img/favicon/favicon.png
+    /build/favicon.ico
+  )
 }
 
 die() ( echo "$*" >&2; exit 1 )
