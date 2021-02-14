@@ -1,6 +1,6 @@
 ---
 title: Example 1
-redirect_from: /eg/
+redirect-from: /eg/
 ---
 
 Example 1...

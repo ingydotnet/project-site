@@ -1,6 +1,6 @@
 ---
 title: Project-Site Documentation
-redirect_from: /doc/documentation
+redirect-from: /doc/documentation
 ---
 
 Follow these steps:

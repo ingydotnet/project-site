@@ -1,7 +1,7 @@
 ---
 title: My Project Site
 description: The web site builder for your projects
-redirect_from: /
+redirect-from: /
 ---
 
 The `project-site` project is about making a website for each of your projects.
