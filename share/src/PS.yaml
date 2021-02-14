@@ -8,12 +8,16 @@ build:
   builder: bootstrap45
   publish: gh-pages
 
+code:
+  repo: https://github.com/ingydotnet/project-site
+  branch: master
+
 page:
   layout: default
   toc: false
 
 theme:
-  color: green
+  color: '127912'
   logo:
     type: template
     letters: Ps
@@ -26,8 +30,6 @@ social:
 navbar:
   left:
   - type: logo
-  - name: Home
-    link: /main
   - name: Documentation
     link: /doc
   - name: Examples

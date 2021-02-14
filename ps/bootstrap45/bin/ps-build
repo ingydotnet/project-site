@@ -46,7 +46,11 @@ clean-dirs() (
       find /output -name index.html |
         xargs -n1 dirname
     )
-    find /output/ -type d -empty | xargs -I: rmdir :
+    (
+      find /output/ -type d -empty |
+        grep -v '^/output/$' |
+        xargs rm -fr
+    ) || true
     rm -fr /output/assets
     rm -fr /output/dist
     rm -f /output/favicon.*
