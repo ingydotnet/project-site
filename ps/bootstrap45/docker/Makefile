@@ -2,7 +2,7 @@ SHELL := bash
 
 DOCKER_USER := projectsite
 DOCKER_NAME := ps-builder-bootstrap45
-DOCKER_TAG := 0.0.4
+DOCKER_TAG := 0.0.5
 DOCKER_IMAGE := $(DOCKER_USER)/$(DOCKER_NAME):$(DOCKER_TAG)
 
 default:
